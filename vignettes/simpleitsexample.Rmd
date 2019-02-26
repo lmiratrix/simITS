@@ -1,0 +1,141 @@
+---
+title: "Introduction to the simITS package"
+author: "Luke Miratrix"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Intro simITS}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+  library( tidyverse )
+
+```
+
+The raw Mecklenberg data we will use to illustrate the simITS package.
+```{r}
+data(mecklenberg)
+head( mecklenberg )
+meck = mutate( mecklenberg, pbail = 100 * pbail )
+ggplot( meck, aes( x=month, y=pbail)) +
+  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=0.5, xmax=25, fill="lightgray"), col = "lightgray", alpha=0.25) +
+  scale_fill_identity(name = "", guide = "none", labels = c('Post Policy era')) +
+  geom_hline( yintercept = 0, col="black") +
+  geom_line( col="black", lty=1, lwd=0.5) +
+  geom_point() +
+  scale_x_continuous( breaks = c(-29,-24,-18,-12,-6,1,6,12,18,24)) +    
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) +
+  labs( title = " ", y = "Percent cases assigned bail", x = " " )
+```
+
+We can add lagged covariates and fit our simple ITS model as so:
+```{r}
+    meck = add.lagged.covariates( meck, outcomename = "pbail", covariates=NULL )
+    head( meck )
+    tail( meck )
+    
+    meck.pre = filter( meck, month <= 0 )    
+    mod = fit.model.default( meck.pre, "pbail" )
+    summary( mod )
+```
+
+```{r}
+  t0 = 0
+    envelope = process.outcome.model( "pbail", meck, 
+                                      t0=t0, R = 100, 
+                                      summarize = TRUE, smooth=FALSE )
+    head( envelope )
+    tail( envelope )
+
+    ggplot( envelope, aes( month ) ) +
+        geom_line( aes( y=Y ), alpha = 0.6 ) +  # original data
+        geom_point( aes( y=Y ) ) +              # original data
+        #    geom_line( aes( y=Ystar1 ), alpha=0.7, col="green" ) +   # loess smoothed line
+        geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2 ) +
+        geom_line( aes( y = Ystar ), col="darkgrey" ) +
+        geom_vline( xintercept = t0+0.5)
+```
+
+
+# Demo of smoothing and summarization ####
+ 
+For simulation we also offer a fake data generator.  It works like this:
+```{r}
+  library( simITS )
+
+    dat = make.fake.data( t.min=-60, t.max=18, t0 = 0 )
+    head( dat )
+    qplot( month, Ystr, data=dat, geom = c( "point","line") )
+    qplot( month, Y, data=dat, geom = c( "point","line") )
+
+
+```
+
+We can then process it.  Here we demonstrate summarizing and smoothing:   
+```{r}
+
+    #debugonce( process.outcome.model )
+    envelope = process.outcome.model( "Y", dat, t0=t0, R = 100, summarize = TRUE, smooth=TRUE )
+    head( envelope )
+    tail( envelope )
+
+    make.envelope.graph(envelope, t0 )
+
+    ggplot( dat, aes( month ) ) +
+        geom_line( aes( y=Y ), alpha = 0.6 ) +
+        geom_point( aes( y=Y ) ) +
+        geom_line( data=envelope, aes( y=Ysmooth1 ), alpha=0.7, col="green" ) +
+        geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.2 ) +
+        geom_line( data=envelope, aes( y = Ysmooth ), col="darkgrey" ) +
+        geom_vline( xintercept = t0+0.5)
+
+
+```
+
+# Seasonality and covariates
+
+First we need to specify what our model is in a helper function like so:
+
+```{r}
+
+#' Helper function to fit the model.  This fits a lagged outcome model to get autoregressive
+#' errors. The rest of the code can allow this to be changed without messing
+#' other stuff up, as long as there is a 'lag.outcome' variable in the model.
+fit.season.model = function( dat, outcomename, lagless = FALSE ) {
+
+    if ( lagless ) {
+        # fit model without any lags.  This is used for smoothing the series.
+        form = paste( outcomename, " ~ month + temperature + Q2 + Q3 + Q4" )
+    } else {
+        form = paste( outcomename, " ~ lag.outcome + month + temperature + Q2 + Q3 + Q4 + lag.temperature + lag.Q2 + lag.Q3 + lag.Q4" )
+    }
+
+    M0 = lm( as.formula( form ), data=dat[-c(1),] )
+    M0
+}
+
+```
+
+A seasonality model on NJ data
+```{r}
+data( newjersey )
+head( newjersey )
+envelope = process.outcome.model( "compwarr.cs", newjersey, t0=-7, R = 100, 
+                                  summarize = TRUE, smooth=TRUE, 
+                                  fit.model = fit.season.model )
+head( envelope )
+tail( envelope )
+
+make.envelope.graph( envelope, t0=-7 )
+```
+
+
+
