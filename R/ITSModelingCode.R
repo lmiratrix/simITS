@@ -481,7 +481,18 @@ add.lagged.covariates = function( dat,
 
 
 
-#' Given a set of simulation runs, estimate average impact over range of months
+#' @title Summary function for summarize.simulation.results
+#' @description Given a set of simulation runs, estimate average impact over range of months
+#' @param res Dataframe of a single series (simulated or otherwise)
+#' @param outcomename Name of outcome in res
+#' @param months Which months to average over, Default: 1:18
+#' @param ... Other parameters (ignored)
+#' @return Single number (in this case mean of given months)
+#' @examples 
+#' data( mecklenberg )
+#' calculate.average.outcome( mecklenberg, "pbail" )
+#' @rdname calculate.average.outcome
+#' @export #' 
 #'
 calculate.average.outcome = function( res, outcomename,
                                       months = 1:18,
@@ -493,7 +504,16 @@ calculate.average.outcome = function( res, outcomename,
 
 
 
-
+#' @title Test a passed test statistic on the simulated data
+#' @description This method is used to look at summary statistics such as average impact post-policy, and see how the predictive distribution compares to the observed.
+#' @param orig.data The raw data (dataframe)
+#' @param predictions The results from process.outcome.model
+#' @param outcomename Outcome to use
+#' @param summarizer A function to calculate some summary quantity, Default: calculate.average.outcome
+#' @param ... Arguments to be passed to summarizer()
+#' @return List of the test statistic and reference distribution.
+#' @rdname summarize.simulation.results
+#' @export
 summarize.simulation.results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {

@@ -1,4 +1,6 @@
-# (FAKE) New Jersey Example
+##
+## (FAKE) New Jersey Example
+##
 
 library( tidyverse )
 library( simITS )
@@ -40,13 +42,12 @@ summary( mod )
 ggplot( newjersey, aes( month, Y ) ) +
   geom_line() + geom_point( size=0.5) +
   labs( y="Total number of cases", x="month" ) +
-#  coord_cartesian( ylim=c(0,20000 ) ) +
   geom_vline( xintercept=c(0,-12), col="red", lty=c(2,1) ) +
   geom_hline( yintercept = 0 )
 ggsave( "my_examples/plots/new_jersey_raw.pdf", width=4.5, height=3 )
 
 
-# For slide title
+# Funky version for pretty title slide in talk
 ggplot( newjersey, aes( month, Y ) ) +
   geom_line() + geom_point( size=0.5) +
   labs( y="Total number of cases", x="month" ) +
@@ -65,12 +66,13 @@ ggsave( "my_examples/plots/new_jersey_temp.pdf", width=4, height=3 )
 
 
 
-# Fit the four different seasonality models
+# Make all the lagged covariates based on the functions
 newjersey = add.lagged.covariates( newjersey, outcomename = "Y", covariates=fit.season.model.qtemp )
 newjersey = add.lagged.covariates( newjersey, outcomename = "Y", covariates=fit.season.model.sin )
 head( newjersey )
 
 
+# Fit the various different seasonality models
 nj.pre = filter( newjersey, month < -6 )
 newjersey$model.q = predict( fit.season.model.q(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
 newjersey$model.qtemp = predict( fit.season.model.qtemp(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
@@ -82,6 +84,7 @@ njplot = newjersey %>% dplyr::select( month, Y, model.q, model.qtemp, model.temp
   gather( model.q, model.qtemp, model.temp, model.sin, model.sintemp, key="model", value="Y.hat" )
 
 njplot = filter( njplot, model != "model.sintemp" )
+head( njplot )
 njplot = mutate( njplot, model = fct_recode( model,
                                              "Quarter"="model.q",
                                              "Quarter+Temp"="model.qtemp",
@@ -90,7 +93,7 @@ njplot = mutate( njplot, model = fct_recode( model,
 ggplot( njplot, aes( x=month ) ) +
   facet_wrap( ~ model ) +
   geom_line( aes( y=Y ), col="grey" ) + #+ geom_point( aes( y=Y ), col="grey" ) +
-  geom_line( aes( y=Y ) )  #, col=model, group=model, lty=model
+  geom_line( aes( y=Y.hat ) )  #, col=model, group=model, lty=model
 ggsave( "my_examples/plots/fourmodels.pdf", width = 4, height = 3 )
 
 head( njplot )
@@ -101,11 +104,11 @@ ggplot( njsub, aes( x=month ) ) +
   geom_hline( yintercept = 0 ) +
   geom_line( aes( y=resid ) )  #, col=model, group=model, lty=model
 
+# Which method generally has the smallest residuals
 njsub %>% group_by( model ) %>%
   summarise( sd.resid = sd( resid ) )
 
-#+
-#  geom_hline( yintercept= 0 )
+
 
 ######  Fit the models and extrapolate ######
 
@@ -220,6 +223,8 @@ make.envelope.graph( envelope.sm, t0=t0 )  +   geom_line( aes( y=Ystar ) ) +
   coord_cartesian( ylim=c(0,85) )
 
 ggsave( "my_examples/plots/new_jersey_no_season.pdf", width=4.75, height=3 )
+
+
 
 
 

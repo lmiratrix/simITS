@@ -1,6 +1,9 @@
 ##
-## Mecklenberg example from paper
+## Mecklenberg example used in the methods paper
 ##
+## This file generates all the graphs needed for the Keynote presentations as well.
+##
+
 
 library( tidyverse )
 library( simITS )
@@ -24,6 +27,7 @@ my_t = theme_tufte() + theme( legend.position="bottom",
 theme_set( my_t )
 
 
+
 #### Exploring the Mecklenberg Data ####
 
 
@@ -38,29 +42,38 @@ ggplot( meck, aes( x=month, y=pbail)) +
   labs( title = " ", y = "Percent cases assigned bail", x = " " )
 
 
-# Breaking the fitting down into parts
+# Breaking the fitting down into parts to examine those regressions
+# (Using the utility function from the package)
+
+# With lag outcome
 meck.pre = filter( meck, month <= 0 )
 mod = fit.model.default( meck.pre, "pbail" )
 summary( mod )
 
+# Drop lag (i.e., fit a line to pre-policy data)
 mod.lagless = fit.model.default( meck.pre, "pbail", lagless = TRUE )
 summary( mod.lagless )
 
-# Estimating the residual variation breakdown
+##
+## Estimating the residual variation breakdown
+##
 
 # Frac residual variation due to prior outcome: 7%
 coef( mod )
 coef( mod )["lag.outcome"]^2
 
 
+# Our change point
 filter( meck, month == t0 )
-
 
 meck.pre$Yhat = predict( mod, newdata=meck.pre )
 meck.pre$Yhat.lagless = predict( mod.lagless, newdata=meck.pre )
 
-ggplot( meck.pre, aes( month, Yhat ) ) + geom_line() +
-  geom_line( aes( y=pbail ), col="blue" ) +
+
+# Our predicted line (fully structural and using the lags to help predict)
+ggplot( meck.pre, aes( month, pbail ) ) + 
+  geom_line() + geom_point() +
+  geom_line( aes( y=Yhat ), col="blue" ) +
   geom_line( aes( y=Yhat.lagless, col="red" ) )
 
 
@@ -104,6 +117,8 @@ rps = replicate( 100, {
   count.crosses( sample( resid(mod0) ) )
 })
 table( rps )
+
+# Our p-value for autoregressive structure of the residuals.  (We find no evidence of such structure.)
 mean( rps <= 13 )
 
 
@@ -120,19 +135,13 @@ predictions = process.outcome.model( "pbail", meck,
 head( predictions )
 
 # These are the observed (prepolicy) or simulated (postpolicy) outcomes
-library( ggthemes )
-my_t = theme_tufte() + theme( legend.position="bottom",
-                              legend.direction="horizontal", legend.key.width=unit(1,"cm"),
-                              panel.border = element_blank() )
-theme_set( my_t )
-
 ggplot( filter( predictions, month >= t0 ), aes( month, Ystar ) ) +
   geom_line( aes(  group=Run ), alpha=0.5) +
   geom_line( data=meck, aes( month, pbail ), col="black" ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail")
-ggsave( "meck_ten_trajectories.pdf", width=7, height=4 )
+ggsave( "my_examples/plots/meck_ten_trajectories.pdf", width=7, height=4 )
 
 
 # Building up the plots of how a sequence is generated
@@ -153,7 +162,7 @@ for ( ct in cuts ) {
     labs( x="month", y="proportion given bail") +
     coord_cartesian( xlim=range( meck$month ), ylim=range( meck$pbail) )
 
-  fname = paste0( "build_out_", ct, ".pdf" )
+  fname = paste0( "my_examples/plots/build_out_", ct, ".pdf" )
   print( plt )
   ggsave( fname, width=4, height=3 )
 }
@@ -166,11 +175,14 @@ ggplot( filter( predictions, month >= t0 ), aes( month, Ystar ) ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail")
-ggsave( "build_out_finished.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_finished.pdf", width=4, height=3 )
+
+
+
 
 ##### Generate our simulated series (no smoothing)  #####
 
-# Make the envelope from 10,000 trials
+# Make the envelope from 10,000 trials (incorporating model uncertainty)
 envelope = process.outcome.model( "pbail", meck,
                                      t0=t0, R = 10000,
                                      summarize = TRUE, smooth=FALSE )
@@ -189,8 +201,9 @@ str( envelope )
 Y.init = filter( envelope, month == t0 )$Y
 str( envelope )
 
+
+# Add in pre-policy data for making nice graph
 head( envelope.plug )
-mod
 envelope.plug2 = merge( envelope.plug, meck.pre[c("month","Yhat")], by="month", all.x=TRUE )
 
 make.envelope.graph(envelope = envelope.plug2, t0 = t0) +
@@ -199,31 +212,10 @@ make.envelope.graph(envelope = envelope.plug2, t0 = t0) +
 #  geom_line( aes(y=Yhat ) )
 
 
-ggsave( "build_out_envelope.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope.pdf", width=4, height=3 )
 
 
 
-##### Further explorations of how things are done #####
-
-# These are the predictions from the model taking out the autoregressive part
-ggplot( predictions, aes( month, Ybar, group=Run ) ) +
-  geom_line() +
-  geom_vline( xintercept=t0, col="red" ) + geom_point()
-
-
-# As above, but broken out by facet to see different series more easily
-ggplot( predictions, aes( month, Ybar ) ) +
-  facet_wrap( ~ Run ) +
-  geom_line() +
-  geom_line( data=meck.pre, aes( month, pbail ), col="red" ) +
-  geom_vline( xintercept=t0, col="red" ) + geom_point( size=0.2)
-
-
-# These look at residuals between (possibly) simulated outcome and prediction
-predictions = mutate( predictions, resid = Ystar - Ybar )
-ggplot( predictions, aes( month, resid, col=Run, group=Run ) ) +
-  geom_line() +
-  geom_vline( xintercept=t0, col="red" ) + geom_point()
 
 
 
@@ -242,7 +234,7 @@ ggplot( envelope, aes( month ) ) +
   geom_line( aes( y=Ystar ) )
 
 
-ggsave( "envelope_plug_in_vs_not.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/envelope_plug_in_vs_not.pdf", width=4, height=3 )
 
 
 
@@ -263,7 +255,7 @@ ggplot( filter( predictions.smooth, month >= t0 ), aes( month, Ysmooth ) ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail")
-ggsave( "ten_smooth_trajectories.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/ten_smooth_trajectories.pdf", width=4, height=3 )
 
 
 
@@ -287,19 +279,18 @@ plt = ggplot( envelope.smooth, aes( month ) ) +
   geom_line( aes( y=Ysmooth1 ), color = "red" ) +
   geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="green" )
 plt
-#  geom_line( aes( y=Ysmooth1 ), color = "red" )
-ggsave( "build_out_envelope_smooth.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope_smooth.pdf", width=4, height=3 )
 
 
 # Add in unsmoothed plot to see impact of smoothing.
-plt = plt +   geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="red" )
+plt = plt + geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="red" )
 plt
-ggsave( "build_out_envelope_smooth_with_old.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope_smooth_with_old.pdf", width=4, height=3 )
 
 
-# Demo of using the utility function for making these graphs
+# Demo of using the utility function for making these graphs.
 make.envelope.graph(envelope = envelope.smooth, t0 = t0,
-                     xlab="month", ylab="proportion given bail")
+                     xlab="month", ylab="proportion given bail" )
 
 
 
@@ -316,9 +307,13 @@ sstat = summarize.simulation.results( orig.data = meck, outcomename = "pbail",
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs
 
-
+# Look at different range of post-policy months (6 months to 18 months out)
+# changes impact estimate.
 sstat = summarize.simulation.results( orig.data = meck, outcomename = "pbail",
                                       predictions = predictions, months = 6:18 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs
+
+
+
