@@ -1,12 +1,12 @@
 Package: simITS
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Analysis via Simulation of Interrupted Time Series (ITS) Data
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Luke Miratrix, Brit Henderson, Chloe Anderson
+Maintainer: Luke Miratrix <lmiratrix@g.harvard.edu>
+Description: Uses simulation to create prediction intervals for post-policy outcomes in Interrupted Time Series (ITS) designs. 
+    This work partially supported by the Arnold Foundation in collaboration with MDRC.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
