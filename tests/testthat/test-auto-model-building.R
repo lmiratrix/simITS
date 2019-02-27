@@ -4,6 +4,8 @@
 
 library( testthat )
 
+context("test auto model building")
+
 test_that("The four smoothing calls work", {
   t0 = 0
   dat = make.fake.data( t.min=-40, t.max=15, t0 = t0)

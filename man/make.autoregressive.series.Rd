@@ -6,16 +6,14 @@
 This series is a plausible continuation of a pre-policy series.  This method needs
 to be given the structural component, calculated from the intercept, linear trend,
 temperature, and seasonality.
-Bundling all seasonality, etc., into Ybar, the assumed model is:
-   $$Y = Ybar + beta1 * Y.pre + residual$$
-where Ybar is our structural model}
+Bundling all seasonality, etc., into Ybar, the assumed model is:}
 \usage{
 make.autoregressive.series(Ybar, Y.init, beta1, sigma, expected = FALSE,
   include.start = FALSE)
 }
 \arguments{
 \item{Ybar}{Structural (expected) sequence.  This method adds the autoregressive residual component
-to this.}
+to this.  Ybar tends to come from generate.structure.sequence()}
 
 \item{Y.init}{Value of series at time point just before first time point in dat.post}
 
@@ -31,11 +29,9 @@ to this.}
 Vector of the synthetic outcomes.
 }
 \description{
-Given model parameters, make a synthetic timeseries for all points after t0.
-This series is a plausible continuation of a pre-policy series.  This method needs
-to be given the structural component, calculated from the intercept, linear trend,
-temperature, and seasonality.
-Bundling all seasonality, etc., into Ybar, the assumed model is:
-   $$Y = Ybar + beta1 * Y.pre + residual$$
-where Ybar is our structural model
+$$Y = Ybar + beta1 * Y.pre + residual$$
+}
+\details{
+where Ybar is our structural model (with lagged OUTCOME, not lagged residual, so the generate.Ybars
+method will not give the correct values here).
 }

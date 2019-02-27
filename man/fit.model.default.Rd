@@ -4,7 +4,7 @@
 \alias{fit.model.default}
 \title{Default ITS model}
 \usage{
-fit.model.default(dat, outcomename, lagless = FALSE)
+fit.model.default(dat, outcomename, lagless = FALSE, ...)
 }
 \arguments{
 \item{dat}{Dataframe of pre-policy data to fit model to.  Needs a "month" column}

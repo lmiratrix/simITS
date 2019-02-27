@@ -301,7 +301,7 @@ predictions = process.outcome.model( "pbail", meck,
                                             t0=t0, R = 1000,
                                             summarize = FALSE, smooth=FALSE )
 
-sstat = summarize.simulation.results( orig.data = meck, outcomename = "pbail",
+sstat = aggregate.simulation.results( orig.data = meck, outcomename = "pbail",
                                       predictions = predictions, months = 1:18 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))

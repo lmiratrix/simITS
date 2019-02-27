@@ -2,18 +2,20 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{generate.Ybars}
 \alias{generate.Ybars}
-\title{Add the model predictions to a series.}
+\title{Add the model predictions to a series, ignoring the lagged components.}
 \usage{
-generate.Ybars(fit0, dat)
+generate.Ybars(fit.model, outcomename, t0, dat)
 }
 \value{
 Predicted sequence for passed dataframe (as vector)
 }
 \description{
-Generate Ybar given a dataframe 'dat'. Ybar is our model predictions without the
-lagged outcome term or residual term.  This is basically the "structural"
-component of our model, which includes seasonality. We do this so we can
-subtract this part off before smoothing so our smoother doesn't have to try
-and capture the seasonality stuff.  Ybar is defined for both pre and post
-policy datapoints.
+Generate Ybar given a dataframe 'dat'. Ybar is our model predictions without
+the lagged outcome term or residual term.  This is basically the "structural"
+component of our model, which includes seasonality.
+}
+\details{
+This is so we can show trendlines and so forth on plots.
+
+Ybar is defined for both pre and post policy datapoints.
 }

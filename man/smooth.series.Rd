@@ -4,13 +4,12 @@
 \alias{smooth.series}
 \title{Smooth a series using a static loess smoother}
 \usage{
-smooth.series(res, t0, fit0, outcomename, covariates,
-  fit.model = fit.model.default, smooth_k = SMOOTH_K,
-  full.output = FALSE, post.only = TRUE)
+smooth.series(res, outcomename, t0, smooth_k = SMOOTH_K,
+  post.only = TRUE, ...)
 }
 \arguments{
-\item{res}{A dataframe with a Ystar column and all the covariates in the
-model, Ystar being the outcome to smooth.}
+\item{res}{A dataframe with a month column and an 'outcomename' column (which
+is the column that will be smoothed).}
 
 \item{smooth_k}{A rough proxy for the number of observations to primarily
 consider to kernal weight in the neighborhood of each timepoint (this is a

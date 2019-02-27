@@ -492,7 +492,7 @@ add.lagged.covariates = function( dat,
 #' data( mecklenberg )
 #' calculate.average.outcome( mecklenberg, "pbail" )
 #' @rdname calculate.average.outcome
-#' @export #' 
+#' @export
 #'
 calculate.average.outcome = function( res, outcomename,
                                       months = 1:18,
@@ -512,9 +512,8 @@ calculate.average.outcome = function( res, outcomename,
 #' @param summarizer A function to calculate some summary quantity, Default: calculate.average.outcome
 #' @param ... Arguments to be passed to summarizer()
 #' @return List of the test statistic and reference distribution.
-#' @rdname summarize.simulation.results
 #' @export
-summarize.simulation.results = function( orig.data, predictions,
+aggregate.simulation.results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
 
@@ -585,7 +584,7 @@ extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
     if ( !smooth ) {
 
       p2 = predictions %>% group_by( month ) %>%
-        summarize( Ymin = quantile( Ystar, 0.025, na.rm=TRUE ),
+        dplyr::summarise( Ymin = quantile( Ystar, 0.025, na.rm=TRUE ),
                    Ymax = quantile( Ystar, 0.975, na.rm=TRUE  ),
                    range = (Ymax - Ymin),
                    SE = sd(Ystar, na.rm=TRUE ),
@@ -597,7 +596,7 @@ extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
     } else {
 
       p2 = predictions %>% group_by( month ) %>%
-        summarize( Ymin = quantile( Ysmooth, 0.025, na.rm=TRUE ),
+        dplyr::summarise( Ymin = quantile( Ysmooth, 0.025, na.rm=TRUE ),
                    Ymax = quantile( Ysmooth, 0.975, na.rm=TRUE ),
                    range = (Ymax - Ymin),
                    SE = sd(Ysmooth, na.rm=TRUE ),

@@ -2,7 +2,14 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{make.many.predictions}
 \alias{make.many.predictions}
-\title{Generate a collection of raw counterfactual trajectories}
+\title{OLD
+#' @return An updated version of the 'res' dataframe with `Ysmooth`, the
+  smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
+  the original sequence to be smoothed.  If full.output=TRUE also include
+  several other columns: `resid`, the residuals based on Ystar and the model,
+  `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
+  the model used for smoothing.
+Generate a collection of raw counterfactual trajectories}
 \usage{
 make.many.predictions(fit0, dat, R, outcomename, t0)
 }

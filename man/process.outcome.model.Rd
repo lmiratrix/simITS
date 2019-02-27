@@ -5,8 +5,8 @@
 \title{Generate an ITS extrapolation simulation.}
 \usage{
 process.outcome.model(outcomename, dat, t0, R = 400, summarize = FALSE,
-  smooth = FALSE, fit.model = fit.model.default, covariates = NULL,
-  plug.in = FALSE, ...)
+  smooth = FALSE, smoother = NULL, fit.model = fit.model.default,
+  covariates = NULL, plug.in = FALSE, ...)
 }
 \arguments{
 \item{outcomename}{Name of column in dat containing the time series.}
@@ -21,9 +21,13 @@ process.outcome.model(outcomename, dat, t0, R = 400, summarize = FALSE,
 
 \item{smooth}{Smooth the series}
 
+\item{smoother}{Function to smooth residuals.  If NULL, will dynamically make
+a model smoother based on the fit.model method.}
+
 \item{fit.model}{The function used to fit the model to simulate from.}
 
-\item{covariates}{Vector of covariate names used in the model function fit.model.}
+\item{covariates}{Vector of covariate names used in the model function
+fit.model.}
 
 \item{plug.in}{Use the estimated parameters as fixed and do not include that
 extra uncertainty in the simulation.}

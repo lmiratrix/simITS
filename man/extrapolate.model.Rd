@@ -5,8 +5,8 @@
 \title{Extrapolate pre-policy data to post-policy era}
 \usage{
 extrapolate.model(M0, outcomename, dat, t0, R = 400, summarize = FALSE,
-  smooth = FALSE, smoother = smooth.predictions, full.output = FALSE,
-  ..., fix.params = FALSE)
+  smooth = FALSE, smoother = smooth.series, full.output = FALSE, ...,
+  fix.params = FALSE)
 }
 \arguments{
 \item{M0}{The fit model}
@@ -27,7 +27,7 @@ look at distribution of smoothed trajectories.  FALSE means look at raw
 data treajectories.}
 
 \item{smoother}{Function to do smoothing, if smoothing set to TRUE.  Default
-is smooth.predictions()}
+is smooth.series()}
 
 \item{full.output}{TRUE means smoother returns residuals as well as smoothed series.}
 

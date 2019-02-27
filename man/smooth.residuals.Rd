@@ -2,16 +2,21 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{smooth.residuals}
 \alias{smooth.residuals}
-\title{Smooth a series by fitting the model to the data, smoothing the residuals,
-and then putting the model predictions back.}
+\title{Smooth residuals after model fit}
 \usage{
-smooth.residuals(res, t0, fit0, outcomename, covariates,
-  fit.model = fit.model.default, smooth_k = SMOOTH_K,
+smooth.residuals(res, t0, outcomename, post.only = TRUE,
+  smooth_k = SMOOTH_K, fit.model = fit.model.default, covariates,
   full.output = FALSE)
 }
 \arguments{
-\item{res}{A dataframe with a Ystar column and all the covariates in the
-model, Ystar being the outcome to smooth.}
+\item{res}{A dataframe with a month column and 'outcomename' column, which is
+the column to be smoothed.}
+
+\item{post.only}{If TRUE fit model and smooth post-policy only. WHY fit model
+on post-policy data only?  Because this will make sure the fixed pre-policy
+does not dominate too much?  We are focusing on post-policy so we want a
+good fitting model for that so we can get our residuals as "white noise" as
+possible before smoothing.}
 
 \item{smooth_k}{A rough proxy for the number of observations to primarily
 consider to kernal weight in the neighborhood of each timepoint (this is a
@@ -19,17 +24,17 @@ bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 want to smooth with an absolute bandwidth, not one as function of how long
 the time series is.}
 
-\item{full.output}{Include residuals, etc., to see how smoother operated.}
-}
-\value{
-An updated version of the 'res' dataframe with `Ysmooth`, the
-  smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
-  the original sequence to be smoothed.  If full.output=TRUE also include
-  several other columns: `resid`, the residuals based on Ystar and the model,
-  `residStar` the smoothed residuals, 'Ybar' the structural predictions of
-  the model.
+\item{covariates}{A dataframe with all covariates needed in the model fitting
+defined by fit.model.}
+
+\item{full.output}{If TRUE give back pieces for diagnostics of smoothing
+process.}
 }
 \description{
+Smooth a series by fitting the model to the data, smoothing the residuals,
+and then putting the model predictions back.
+}
+\details{
 Use loess smoother on complete series of residuals including original data
 pre-policy and synthetic data post policy (i.e., smooth the entire plausible
 series).

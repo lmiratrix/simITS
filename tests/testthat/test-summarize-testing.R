@@ -3,7 +3,7 @@ library( testthat )
 library( tidyverse )
 library( simITS )
 
-context("test-general-tests")
+context("test-summarization-testing")
 
 
 test_that("The four types of smooth vs summarize calls work", {
@@ -14,7 +14,7 @@ test_that("The four types of smooth vs summarize calls work", {
                                        t0=t0, R = 10,
                                        summarize = FALSE, smooth=FALSE )
   
-  sr =  summarize.simulation.results( mecklenberg, preds, "pbail" )
+  sr =  aggregate.simulation.results( mecklenberg, preds, "pbail" )
   sr
   
   expect_equal( length( sr ), 2 )
