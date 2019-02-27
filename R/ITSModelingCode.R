@@ -505,15 +505,21 @@ calculate.average.outcome = function( res, outcomename,
 
 
 #' @title Test a passed test statistic on the simulated data
-#' @description This method is used to look at summary statistics such as average impact post-policy, and see how the predictive distribution compares to the observed.
+#' @description This method is used to look at summary statistics such as
+#'   average impact post-policy, and see how the predictive distribution
+#'   compares to the observed.
+#'
 #' @param orig.data The raw data (dataframe)
-#' @param predictions The results from process.outcome.model
-#' @param outcomename Outcome to use
-#' @param summarizer A function to calculate some summary quantity, Default: calculate.average.outcome
+#' @param predictions The results from process.outcome.model.
+#' @param outcomename Outcome to use.
+#' @param summarizer A function to calculate some summary quantity, Default:
+#'   calculate.average.outcome
 #' @param ... Arguments to be passed to summarizer()
+#' 
 #' @return List of the test statistic and reference distribution.
+#'
 #' @export
-aggregate.simulation.results = function( orig.data, predictions,
+aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
 

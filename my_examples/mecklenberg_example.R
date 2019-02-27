@@ -301,7 +301,7 @@ predictions = process.outcome.model( "pbail", meck,
                                             t0=t0, R = 1000,
                                             summarize = FALSE, smooth=FALSE )
 
-sstat = aggregate.simulation.results( orig.data = meck, outcomename = "pbail",
+sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
                                       predictions = predictions, months = 1:18 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))
@@ -309,7 +309,7 @@ sstat$t.obs
 
 # Look at different range of post-policy months (6 months to 18 months out)
 # changes impact estimate.
-sstat = summarize.simulation.results( orig.data = meck, outcomename = "pbail",
+sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
                                       predictions = predictions, months = 6:18 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))

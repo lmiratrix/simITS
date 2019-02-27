@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
   library( tidyverse )
-
+library( simITS )
 ```
 
 The raw Mecklenberg data we will use to illustrate the simITS package.
@@ -102,40 +102,22 @@ We can then process it.  Here we demonstrate summarizing and smoothing:
 
 # Seasonality and covariates
 
-First we need to specify what our model is in a helper function like so:
-
-```{r}
-
-#' Helper function to fit the model.  This fits a lagged outcome model to get autoregressive
-#' errors. The rest of the code can allow this to be changed without messing
-#' other stuff up, as long as there is a 'lag.outcome' variable in the model.
-fit.season.model = function( dat, outcomename, lagless = FALSE ) {
-
-    if ( lagless ) {
-        # fit model without any lags.  This is used for smoothing the series.
-        form = paste( outcomename, " ~ month + temperature + Q2 + Q3 + Q4" )
-    } else {
-        form = paste( outcomename, " ~ lag.outcome + month + temperature + Q2 + Q3 + Q4 + lag.temperature + lag.Q2 + lag.Q3 + lag.Q4" )
-    }
-
-    M0 = lm( as.formula( form ), data=dat[-c(1),] )
-    M0
-}
-
-```
-
-A seasonality model on NJ data
+A seasonality model on some fake data with a strong seasonality component is easy to fit.  You just construct some code to fit the seasonality model via the `make.fit.season.model()` factory (you need to have the covariates pre-constructed in your data):
 ```{r}
 data( newjersey )
 head( newjersey )
-envelope = process.outcome.model( "compwarr.cs", newjersey, t0=-7, R = 100, 
+fit.season.model.qtemp =  make.fit.season.model( ~ temperature + Q2 + Q3 + Q4 )
+
+envelope = process.outcome.model( "Y", newjersey, t0=-7, R = 100, 
                                   summarize = TRUE, smooth=TRUE, 
-                                  fit.model = fit.season.model )
+                                  fit.model = fit.season.model.qtemp )
 head( envelope )
 tail( envelope )
 
 make.envelope.graph( envelope, t0=-7 )
 ```
+
+Note how it will construct the lagged covariates automatically. The `make.fit.season.model()` method records what covariates are needed from the passed formula.
 
 
 

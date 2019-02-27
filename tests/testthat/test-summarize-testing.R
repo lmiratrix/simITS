@@ -14,7 +14,7 @@ test_that("The four types of smooth vs summarize calls work", {
                                        t0=t0, R = 10,
                                        summarize = FALSE, smooth=FALSE )
   
-  sr =  aggregate.simulation.results( mecklenberg, preds, "pbail" )
+  sr =  aggregate_simulation_results( mecklenberg, preds, "pbail" )
   sr
   
   expect_equal( length( sr ), 2 )
