@@ -206,14 +206,21 @@ str( envelope )
 head( envelope.plug )
 envelope.plug2 = merge( envelope.plug, meck.pre[c("month","Yhat")], by="month", all.x=TRUE )
 
+# Envelope from plug (too narrow)
 make.envelope.graph(envelope = envelope.plug2, t0 = t0) +
   labs( x="month", y="proportion given bail") +
   geom_line( aes(y=Ystar ) )
-#  geom_line( aes(y=Yhat ) )
+
+ggsave( "my_examples/plots/build_out_envelope_plug.pdf", width=4, height=3 )
+
+
+# Corrected envelope with uncertainty
+make.envelope.graph(envelope = envelope, t0 = t0) +
+  labs( x="month", y="proportion given bail") +
+  geom_line( aes(y=Ystar ) )
 
 
 ggsave( "my_examples/plots/build_out_envelope.pdf", width=4, height=3 )
-
 
 
 
