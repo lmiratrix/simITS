@@ -18,9 +18,6 @@
   \item{\code{comptot.cs}}{double Total number of arrests}
   \item{\code{temperature}}{double Average temperature in New Jersey that month.}
 }}
-\source{
-\url{http://somewhere.important.com/}
-}
 \usage{
 newjersey
 }

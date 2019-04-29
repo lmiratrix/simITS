@@ -17,9 +17,6 @@
   \item{\code{pstint7}}{double COLUMN_DESCRIPTION}
   \item{\code{pstint30}}{double COLUMN_DESCRIPTION}
 }}
-\source{
-\url{http://somewhere.important.com/}
-}
 \usage{
 mecklenberg
 }

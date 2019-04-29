@@ -3,9 +3,6 @@
 SMOOTH_K = 11
 
 
-
-library( tidyverse )
-
 #' Default ITS model
 #'
 #' This fits the model outcomename ~ lag.outcome + month, with no
@@ -444,8 +441,6 @@ make.many.predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 
 
 
-
-
 #' Augment dataframe with lagged covariates
 #'
 #' @param dat   The dataframe
@@ -460,6 +455,10 @@ make.many.predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 add.lagged.covariates = function( dat,
                                   outcomename,
                                   covariates = NULL ) {
+  if ( !( outcomename %in% names(dat) ) ) {
+    stop( sprintf( "Outcome '%s' is not a column in passed data", outcomename ) )
+  }
+  
   # make lagged covariates for modeling
   dat = mutate( dat, lag.outcome = lag( dat[[outcomename]] ) )
 

@@ -15,7 +15,6 @@
 #'   \item{\code{pstint7}}{double COLUMN_DESCRIPTION}
 #'   \item{\code{pstint30}}{double COLUMN_DESCRIPTION}
 #'}
-#' @source \url{http://somewhere.important.com/}
 "mecklenberg"
 
 
@@ -36,5 +35,18 @@
 #'   \item{\code{comptot.cs}}{double Total number of arrests}
 #'   \item{\code{temperature}}{double Average temperature in New Jersey that month.}
 #'}
-#' @source \url{http://somewhere.important.com/}
 "newjersey"
+
+
+
+#' @title Mecklenberg subgroup data
+#' @description Mecklenberg data of proportion of different categories of cases given bail (by month).
+#' @format A data frame with 144 rows and 5 variables:
+#' \describe{
+#'   \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
+#'   \item{\code{n.cases}}{integer Number of cases total that month}
+#'   \item{\code{category}}{character Class of subgroup}
+#'   \item{\code{n}}{integer Number of cases in subgroup}
+#'   \item{\code{pbail}}{double Proportion of cases in subgroup assigned bail} 
+#'}
+"meck_subgroup"
