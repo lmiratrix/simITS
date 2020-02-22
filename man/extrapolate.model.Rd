@@ -4,9 +4,19 @@
 \alias{extrapolate.model}
 \title{Extrapolate pre-policy data to post-policy era}
 \usage{
-extrapolate.model(M0, outcomename, dat, t0, R = 400, summarize = FALSE,
-  smooth = FALSE, smoother = smooth.series, full.output = FALSE, ...,
-  fix.params = FALSE)
+extrapolate.model(
+  M0,
+  outcomename,
+  dat,
+  t0,
+  R = 400,
+  summarize = FALSE,
+  smooth = FALSE,
+  smoother = smooth.series,
+  full.output = FALSE,
+  ...,
+  fix.params = FALSE
+)
 }
 \arguments{
 \item{M0}{The fit model}

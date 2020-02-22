@@ -4,8 +4,15 @@
 \alias{adjust.data}
 \title{Adjust an outcome based on the group weights.}
 \usage{
-adjust.data(dat, outcomename, groupname, pi.star, is.count = FALSE,
-  include.aggregate = FALSE, covariates = NULL)
+adjust.data(
+  dat,
+  outcomename,
+  groupname,
+  pi.star,
+  is.count = FALSE,
+  include.aggregate = FALSE,
+  covariates = NULL
+)
 }
 \arguments{
 \item{dat}{Dataframe of data.  Requires an N column of total cases

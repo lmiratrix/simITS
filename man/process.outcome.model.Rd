@@ -4,9 +4,19 @@
 \alias{process.outcome.model}
 \title{Generate an ITS extrapolation simulation.}
 \usage{
-process.outcome.model(outcomename, dat, t0, R = 400, summarize = FALSE,
-  smooth = FALSE, smoother = NULL, fit.model = fit.model.default,
-  covariates = NULL, plug.in = FALSE, ...)
+process.outcome.model(
+  outcomename,
+  dat,
+  t0,
+  R = 400,
+  summarize = FALSE,
+  smooth = FALSE,
+  smoother = NULL,
+  fit.model = fit.model.default,
+  covariates = NULL,
+  plug.in = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outcomename}{Name of column in dat containing the time series.}

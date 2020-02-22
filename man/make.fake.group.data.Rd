@@ -4,8 +4,12 @@
 \alias{make.fake.group.data}
 \title{A fake DGP for illustrating the code.}
 \usage{
-make.fake.group.data(t.min, t0, t.max, method = c("complex", "linear",
-  "jersey"))
+make.fake.group.data(
+  t.min,
+  t0,
+  t.max,
+  method = c("complex", "linear", "jersey")
+)
 }
 \description{
 This code makes synthetic grouped data that can be used to illustrate

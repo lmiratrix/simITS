@@ -4,9 +4,16 @@
 \alias{smooth.residuals}
 \title{Smooth residuals after model fit}
 \usage{
-smooth.residuals(res, t0, outcomename, post.only = TRUE,
-  smooth_k = SMOOTH_K, fit.model = fit.model.default, covariates,
-  full.output = FALSE)
+smooth.residuals(
+  res,
+  t0,
+  outcomename,
+  post.only = TRUE,
+  smooth_k = SMOOTH_K,
+  fit.model = fit.model.default,
+  covariates,
+  full.output = FALSE
+)
 }
 \arguments{
 \item{res}{A dataframe with a month column and 'outcomename' column, which is

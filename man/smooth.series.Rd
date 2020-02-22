@@ -4,8 +4,7 @@
 \alias{smooth.series}
 \title{Smooth a series using a static loess smoother}
 \usage{
-smooth.series(res, outcomename, t0, smooth_k = SMOOTH_K,
-  post.only = TRUE, ...)
+smooth.series(res, outcomename, t0, smooth_k = SMOOTH_K, post.only = TRUE, ...)
 }
 \arguments{
 \item{res}{A dataframe with a month column and an 'outcomename' column (which

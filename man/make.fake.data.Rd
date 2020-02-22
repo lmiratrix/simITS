@@ -4,10 +4,50 @@
 \alias{make.fake.data}
 \title{Make fake data for testing purposes.}
 \usage{
-make.fake.data(t.min = -40, t.max = 9, t0 = 0, rho = 0.5,
-  sd.omega = 1, coef.line = c(20, 0.05), coef.q = c(1, 0, -1, 0),
-  coef.temp = 0.1, coef.sin = c(0, 0), coef.tx = c(0, 0.25, 5))
+make.fake.data(
+  t.min = -40,
+  t.max = 9,
+  t0 = 0,
+  rho = 0.5,
+  sd.omega = 1,
+  coef.line = c(20, 0.05),
+  coef.q = c(1, 0, -1, 0),
+  coef.temp = 0.1,
+  coef.sin = c(0, 0),
+  coef.tx = c(0, 0.25, 5)
+)
+}
+\arguments{
+\item{t.min}{minimum time}
+
+\item{t.max}{maximum time}
+
+\item{rho}{what is rho here}
+
+\item{sd.omega}{need discription}
+
+\item{coef.line}{need discription}
+
+\item{coef.q}{need discription}
+
+\item{coef.temp}{need discription}
+
+\item{coef.sin}{need discription}
+
+\item{coef.tx}{need discription}
+
+\item{t.0}{initial time setting usually(0)}
+}
+\value{
+A \code{data.frame} having \code{month} , \code{temperature} , \code{sin.m} , \code{cos.m} , \code{Q1}, 
+\code{Q2} , \code{Q3}, \code{Q4}, \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 }
 \description{
 Has heavy seasonality, and an extra bump at 12 months post-policy
+}
+\examples{
+simData <- make.fake.data()
+t0 <- 0
+simData <- make.fake.data(t.min=-40, t.max=15, t0=t0)
+
 }

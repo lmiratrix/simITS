@@ -5,6 +5,25 @@
 #'
 #' Has heavy seasonality, and an extra bump at 12 months post-policy
 #'
+#' @param t.min minimum time 
+#' @param t.max maximum time 
+#' @param t.0 initial time setting usually(0)
+#' @param rho what is rho here 
+#' @param sd.omega need discription 
+#' @param coef.line need discription 
+#' @param coef.q need discription 
+#' @param coef.temp need discription 
+#' @param coef.sin need discription 
+#' @param coef.tx need discription 
+#'
+#' @return A \code{data.frame} having \code{month} , \code{temperature} , \code{sin.m} , \code{cos.m} , \code{Q1}, 
+#' \code{Q2} , \code{Q3}, \code{Q4}, \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
+#'
+#' @examples
+#' simData <- make.fake.data()
+#' t0 <- 0
+#' simData <- make.fake.data(t.min=-40, t.max=15, t0=t0)
+#'
 #' @export
 make.fake.data = function( t.min = -40, t.max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
                            coef.line = c( 20, 0.05 ),
@@ -14,6 +33,10 @@ make.fake.data = function( t.min = -40, t.max = 9, t0 = 0, rho = 0.50, sd.omega 
                            coef.tx = c( 0, 0.25, 5 ) ) {
   require( tidyverse )
 
+  #initial check for input parametes
+  stopifnot(is.numeric(t.min), is.numeric(t.max), is.numeric(t0), is.numeric(rho), is.numeric(sd.omega),
+		is.numeric(coef.line), is.numeric(coef.q) ,is.numeric(coef.temp) ,is.numeric(coef.sin) ,
+		is.numeric(coef.tx))
   # Make some fake data
   dat = data.frame( month = t.min:t.max )
   N = nrow( dat )
