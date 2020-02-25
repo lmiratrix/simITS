@@ -4,8 +4,13 @@
 \alias{aggregate_simulation_results}
 \title{Test a passed test statistic on the simulated data}
 \usage{
-aggregate_simulation_results(orig.data, predictions, outcomename,
-  summarizer = calculate.average.outcome, ...)
+aggregate_simulation_results(
+  orig.data,
+  predictions,
+  outcomename,
+  summarizer = calculate.average.outcome,
+  ...
+)
 }
 \arguments{
 \item{orig.data}{The raw data (dataframe)}

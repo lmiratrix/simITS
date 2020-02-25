@@ -8,8 +8,14 @@ to be given the structural component, calculated from the intercept, linear tren
 temperature, and seasonality.
 Bundling all seasonality, etc., into Ybar, the assumed model is:}
 \usage{
-make.autoregressive.series(Ybar, Y.init, beta1, sigma, expected = FALSE,
-  include.start = FALSE)
+make.autoregressive.series(
+  Ybar,
+  Y.init,
+  beta1,
+  sigma,
+  expected = FALSE,
+  include.start = FALSE
+)
 }
 \arguments{
 \item{Ybar}{Structural (expected) sequence.  This method adds the autoregressive residual component

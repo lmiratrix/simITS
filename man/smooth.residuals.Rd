@@ -4,9 +4,16 @@
 \alias{smooth.residuals}
 \title{Smooth residuals after model fit}
 \usage{
-smooth.residuals(res, t0, outcomename, post.only = TRUE,
-  smooth_k = SMOOTH_K, fit.model = fit.model.default, covariates,
-  full.output = FALSE)
+smooth.residuals(
+  res,
+  t0,
+  outcomename,
+  post.only = TRUE,
+  smooth_k = SMOOTH_K,
+  fit.model = fit.model.default,
+  covariates,
+  full.output = FALSE
+)
 }
 \arguments{
 \item{res}{A dataframe with a month column and 'outcomename' column, which is
@@ -23,6 +30,10 @@ consider to kernal weight in the neighborhood of each timepoint (this is a
 bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 want to smooth with an absolute bandwidth, not one as function of how long
 the time series is.}
+
+\item{fit.model}{A function that takes data, fits a linear model, and returns
+the fit model. This function needs an option to include (or not) lagged
+covariates.}
 
 \item{covariates}{A dataframe with all covariates needed in the model fitting
 defined by fit.model.}

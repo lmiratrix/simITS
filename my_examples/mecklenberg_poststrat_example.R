@@ -1,7 +1,10 @@
 ##
-## Mecklenberg example used in the methods paper to illustrate post stratificaition
+## Mecklenberg example used in the methods paper to illustrate post
+## stratificaition
 ##
+## This script generates all plots in the post stratification section.
 ##
+## 
 
 
 library( tidyverse )
@@ -28,6 +31,17 @@ tmax = max( meck$month )
 
 pis = calculate.group.weights( "category", meck, t0, tmax )
 pis
+
+
+##
+#### The different subgroups changing over time
+##
+
+# Looking at changing shares across time
+ggplot( meck, aes( month, N, col=category ) ) +
+  geom_point() + geom_line() +
+  geom_smooth( se=FALSE, lty=2 )
+ggsave( "my_examples/plots/meck_changing_count.pdf", width=5, height=3.75 )
 
 
 ##

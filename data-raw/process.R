@@ -4,6 +4,12 @@
 # Process the datafiles used as illustrations in the package
 
 library( tidyverse )
+
+
+
+
+#### Make Mechlenberg data  ####
+
 meck = read_csv( "data-raw/mech_month_outcomes.csv")
 nrow( meck )
 meck = rename( meck, month = month_t )
@@ -100,27 +106,58 @@ if ( FALSE ) {
 }
 
 
-if ( FALSE ) {
+#### Make New Jersey (fake) data #####
+
+if ( TRUE ) {
   nj = read_csv("data-raw/njbymonth.csv" )
   nj = nj[ -c(2:11)]
   head( nj )
   nj = dplyr::select( nj, -H1, -H2 )
   summary( nj$temperature )
   sd( nj$temperature )
+  
+  nj = rename( nj, n.warrant = compwarr.cs,
+               n.summons = compsumm.cs,
+               n = comptot.cs,
+               sin.m = tsin1,
+               cos.m = tcos1
+               )
+  nj = mutate( nj, n.warrant = round( n.warrant ),
+               n.summons = round( n.summons ) )
+  nj$n = nj$n.warrant + nj$n.summons 
+  
+  with( nj, n - n.summons - n.warrant )
+  #nj = dplyr::select( month, compwarr.cs, compsumm.cs, comptot.cs, temperature )
 }
 
 
 # Make a new new jersey
+if ( FALSE ) {
+  
 set.seed( 1019 )
 library( simITS )
-nj = make.fake.data( t.min= -7*12, t.max = 12, t0 = 0, rho = 0.5, sd.omega = 6,
-                     coef.temp = 0.30 )
-head( nj )
-ggplot( data=nj, aes( month, Y ) ) +
+njf = make.fake.data( t.min= -7*12, t.max = 18, t0 = 0, rho = 0.4, sd.omega = 4,
+                     coef.q = c( 9, 5, -12, 0 ),
+                     coef.temp = 0.20,
+                     coef.tx = c( 8, 0.25, -1 ) )
+head( njf )
+njf = mutate( njf, Y = round( Y * 50 ),
+             Ystr = Ystr * 50,
+             Ystr0 = Ystr0 * 50 )
+ggplot( data=njf, aes( month, Y ) ) +
   geom_line() +
-  geom_line( aes( y = Ystr ), col="green" )
-nj$Ystr = NULL
+  geom_line( aes( y = Ystr ), col="green" ) +
+  geom_line( aes( y = Ystr0 ), col="blue" ) +
+  geom_vline( xintercept = 0.5 )
+njf$Ystr = NULL
 
+# make the real the fake
+nj = njf
+
+}
+
+
+#### Save all the data to the real data for the package ####
 
 mecklenberg = meck
 newjersey = nj
@@ -129,9 +166,9 @@ meck_subgroup = meck2.l
 usethis::use_data(mecklenberg, newjersey, meck_subgroup, overwrite = TRUE)
 
 
+# Make skeleton documentation for the datasets
 if ( FALSE ) {
   sinew::makeOxygen(mecklenberg, add_fields = "source")
   sinew::makeOxygen(newjersey, add_fields = "source")
   sinew::makeOxygen(meck_subgroup, add_fields = "source")
-  
 }

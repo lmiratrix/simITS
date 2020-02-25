@@ -4,8 +4,14 @@
 \alias{aggregate.data}
 \title{Aggregate grouped data}
 \usage{
-\method{aggregate}{data}(dat, outcomename, groupname, is.count = FALSE,
-  rich = TRUE, covariates = NULL)
+\method{aggregate}{data}(
+  dat,
+  outcomename,
+  groupname,
+  is.count = FALSE,
+  rich = TRUE,
+  covariates = NULL
+)
 }
 \arguments{
 \item{is.count}{If TRUE the data are counts, and should be aggregated by sum

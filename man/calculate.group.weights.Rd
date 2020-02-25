@@ -5,8 +5,7 @@
 \title{Calculate overall proportion of cases in each group that lie within a given
 interval of time defined by t.min and t.max.}
 \usage{
-calculate.group.weights(groupname, dat, t.min, t.max = max(dat$month),
-  N = "N")
+calculate.group.weights(groupname, dat, t.min, t.max = max(dat$month), N = "N")
 }
 \arguments{
 \item{groupname}{Name of the column that has the grouping categorical

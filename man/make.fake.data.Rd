@@ -4,9 +4,18 @@
 \alias{make.fake.data}
 \title{Make fake data for testing purposes.}
 \usage{
-make.fake.data(t.min = -40, t.max = 9, t0 = 0, rho = 0.5,
-  sd.omega = 1, coef.line = c(20, 0.05), coef.q = c(1, 0, -1, 0),
-  coef.temp = 0.1, coef.sin = c(0, 0), coef.tx = c(0, 0.25, 5))
+make.fake.data(
+  t.min = -40,
+  t.max = 9,
+  t0 = 0,
+  rho = 0.5,
+  sd.omega = 1,
+  coef.line = c(20, 0.05),
+  coef.q = c(1, 0, -1, 0),
+  coef.temp = 0.1,
+  coef.sin = c(0, 0),
+  coef.tx = c(0, 0.25, 5)
+)
 }
 \description{
 Has heavy seasonality, and an extra bump at 12 months post-policy

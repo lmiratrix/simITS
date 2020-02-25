@@ -1,8 +1,11 @@
 ##
 ## Mecklenberg example used in the methods paper
 ##
-## This file generates all the graphs needed for the Keynote presentations as well.
-##
+## This file generates all the figures needed for the paper and initial Keynote
+## presentations as well.
+## 
+
+file_format = "pdf" # jpeg" # eps" # NULL
 
 
 library( tidyverse )
@@ -11,7 +14,17 @@ library( simITS )
 data( "mecklenberg")
 head( mecklenberg )
 
+
+FIG_WIDTH = 3.7
+FIG_HEIGHT = 2.8
+
+
+# Number of iterations for simulations
+R = 10000
+
+# When pre-policy ends
 t0 = 0
+
 
 meck = mutate( mecklenberg, pbail = 100 * pbail )
 
@@ -41,6 +54,10 @@ ggplot( meck, aes( x=month, y=pbail)) +
   coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) +
   labs( title = " ", y = "Percent cases assigned bail", x = " " )
 
+ggsave( "my_examples/plots/mech_bail_data.pdf", 
+        width = FIG_WIDTH, height = FIG_HEIGHT )
+ggsave( paste0( "my_examples/plots/mech_bail_data.", file_format ),
+        width = FIG_WIDTH, height = FIG_HEIGHT, device=file_format )
 
 # Breaking the fitting down into parts to examine those regressions
 # (Using the utility function from the package)
@@ -140,8 +157,11 @@ ggplot( filter( predictions, month >= t0 ), aes( month, Ystar ) ) +
   geom_line( data=meck, aes( month, pbail ), col="black" ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
-  labs( x="month", y="proportion given bail")
-ggsave( "my_examples/plots/meck_ten_trajectories.pdf", width=7, height=4 )
+  labs( x="month", y="proportion given bail") +
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
+
+ggsave( paste0( "my_examples/plots/meck_ten_trajectories.", file_format ), 
+        width = FIG_WIDTH, height = FIG_HEIGHT, device=file_format )
 
 
 # Building up the plots of how a sequence is generated
@@ -164,7 +184,7 @@ for ( ct in cuts ) {
 
   fname = paste0( "my_examples/plots/build_out_", ct, ".pdf" )
   print( plt )
-  ggsave( fname, width=4, height=3 )
+  ggsave( fname, width = FIG_WIDTH, height = FIG_HEIGHT )
 }
 
 
@@ -174,8 +194,12 @@ ggplot( filter( predictions, month >= t0 ), aes( month, Ystar ) ) +
   geom_line( data=meck, aes( month, pbail ), col="black" ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
-  labs( x="month", y="proportion given bail")
-ggsave( "my_examples/plots/build_out_finished.pdf", width=4, height=3 )
+  labs( x="month", y="proportion given bail") +
+  #coord_cartesian( xlim=range( meck$month ), ylim=range( meck$pbail) ) 
+coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
+  
+ggsave( "my_examples/plots/build_out_finished.pdf", width = FIG_WIDTH, height = FIG_HEIGHT )
+
 
 
 
@@ -184,22 +208,22 @@ ggsave( "my_examples/plots/build_out_finished.pdf", width=4, height=3 )
 
 # Make the envelope from 10,000 trials (incorporating model uncertainty)
 envelope = process.outcome.model( "pbail", meck,
-                                     t0=t0, R = 10000,
+                                     t0=t0, R = R,
                                      summarize = TRUE, smooth=FALSE )
 
 
 # The envelope from 10,000 trials WITHOUT uncertainty.  (This one is WRONG!)
 envelope.plug = process.outcome.model( "pbail", meck,
-                                       t0=t0, R = 10000,
+                                       t0=t0, R = R,
                                        summarize = TRUE, smooth=FALSE,
                                        plug.in = TRUE )
 
 nrow( envelope )
 head( envelope )
 tail( envelope )
-str( envelope )
+#str( envelope )
 Y.init = filter( envelope, month == t0 )$Y
-str( envelope )
+#str( envelope )
 
 
 # Add in pre-policy data for making nice graph
@@ -211,16 +235,17 @@ make.envelope.graph(envelope = envelope.plug2, t0 = t0) +
   labs( x="month", y="proportion given bail") +
   geom_line( aes(y=Ystar ) )
 
-ggsave( "my_examples/plots/build_out_envelope_plug.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope_plug.pdf", width = FIG_WIDTH, height = FIG_HEIGHT )
 
 
 # Corrected envelope with uncertainty
 make.envelope.graph(envelope = envelope, t0 = t0) +
   labs( x="month", y="proportion given bail") +
-  geom_line( aes(y=Ystar ) )
+  geom_line( aes(y=Ystar ) ) +
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
 
-
-ggsave( "my_examples/plots/build_out_envelope.pdf", width=4, height=3 )
+ggsave( paste0( "my_examples/plots/mech_envelope.", file_format ), width = FIG_WIDTH, height = FIG_HEIGHT,
+        device=file_format )
 
 
 
@@ -241,35 +266,37 @@ ggplot( envelope, aes( month ) ) +
   geom_line( aes( y=Ystar ) )
 
 
-ggsave( "my_examples/plots/envelope_plug_in_vs_not.pdf", width=4, height=3 )
+ggsave( paste0( "my_examples/plots/envelope_plug_in_vs_not.", file_format ), 
+        width = FIG_WIDTH, height = FIG_HEIGHT, device=file_format )
 
 
 
 
 #####  Smoothed predictions and associated envelopes #####
 
-
+MY_SMOOTH = 20
 
 predictions.smooth = process.outcome.model( "pbail", meck,
                                          t0=t0, R = 10,
-                                         summarize = FALSE, smooth=TRUE,
+                                         summarize = FALSE, smooth=TRUE, smooth_k = MY_SMOOTH,
                                          smoother = smooth.series,
                                          post.only = TRUE)
 head( predictions.smooth )
 ggplot( filter( predictions.smooth, month >= t0 ), aes( month, Ysmooth ) ) +
-  geom_line( aes(  group=Run ), alpha=0.5) +
+  geom_line( aes(  group=Run ), alpha=0.5, na.rm=TRUE, ) +
   geom_line( data=meck, aes( month, pbail ), col="black" ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail")
-ggsave( "my_examples/plots/ten_smooth_trajectories.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/ten_smooth_trajectories.pdf", 
+        width = FIG_WIDTH, height = FIG_HEIGHT )
 
 
 
-# The envelope from 10,000 trials using smoothing
+# The envelope from R trials using smoothing
 envelope.smooth = process.outcome.model( "pbail", meck,
-                                  t0=t0, R = 10000,
-                                  summarize = TRUE, smooth=TRUE,
+                                  t0=t0, R = R,
+                                  summarize = TRUE, smooth=TRUE, smooth_k = MY_SMOOTH,
                                   smoother = smooth.series,
                                   post.only=TRUE )
 
@@ -282,17 +309,19 @@ plt = ggplot( envelope.smooth, aes( month ) ) +
   geom_line( aes( y=Y ), alpha = 0.6 ) + geom_point( aes( y=Y ) )  +
   geom_vline( xintercept=t0, col="black" ) +
   geom_point( x=t0, y=Y.init, col="red" ) +
-  geom_line( aes( y=Ysmooth ), alpha=0.7, color="green" ) +
-  geom_line( aes( y=Ysmooth1 ), color = "red" ) +
+  geom_line( aes( y=Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
+  geom_line( aes( y=Ysmooth1 ), color = "red", na.rm=TRUE ) +
   geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="green" )
 plt
-ggsave( "my_examples/plots/build_out_envelope_smooth.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope_smooth.pdf", 
+        width = FIG_WIDTH, height = FIG_HEIGHT )
 
 
 # Add in unsmoothed plot to see impact of smoothing.
 plt = plt + geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="red" )
 plt
-ggsave( "my_examples/plots/build_out_envelope_smooth_with_old.pdf", width=4, height=3 )
+ggsave( "my_examples/plots/build_out_envelope_smooth_with_old.pdf", 
+        width = FIG_WIDTH, height = FIG_HEIGHT )
 
 
 # Demo of using the utility function for making these graphs.
@@ -301,11 +330,55 @@ make.envelope.graph(envelope = envelope.smooth, t0 = t0,
 
 
 
+# Smoothing more vs. less
+
+alphas = c( 7, 11, 20, 100 )
+names( alphas ) = alphas
+preds = plyr::ldply( alphas, function( alpha ) {
+  pds = process.outcome.model( "pbail", meck,
+                                                t0=t0, R = 10,
+                                                summarize = FALSE, smooth=TRUE,
+                                                smoother = smooth.series,
+                                                smooth_k = alpha,
+                                                post.only = TRUE)
+  pds
+}, .id="alpha_k" )
+
+head( preds )
+
+ggplot( filter( preds, month >= t0 ), aes( month, Ysmooth ) ) +
+  facet_wrap( ~ alpha_k ) +
+  geom_line( aes( group=Run, col=alpha_k ), alpha=0.5, na.rm=TRUE) +
+  geom_line( data=meck, aes( month, pbail ), col="black" ) +
+  geom_point( data=meck, aes( month, pbail ) ) +
+  geom_vline( xintercept=t0, col="red" ) +
+  labs( x="month", y="proportion given bail")
+
+
+# Looking at smoothing
+if ( FALSE ) {
+  M0 = fit.season.model.qtemp( newjersey, "Y" )
+  M0full = model.frame( M0, data=newjersey, na.action=NULL )
+  
+  smoother = simITS:::make.model.smoother(fit.model = fit.season.model.qtemp, covariates=M0full )
+  newjersey$sm1 = smoother( newjersey, t0=t0, "Y", smooth_k = 25 )
+  newjersey$sm2 = smoother( newjersey, t0=t0, "Y", smooth_k = 11 )
+  gg = newjersey %>% dplyr::select( month, sm1, sm2, Y ) %>%
+    gather( sm1, sm2, Y, key="series", value="Y" )
+  gg = filter( gg, month > -20 )
+  ggplot( gg, aes( month, Y, col=series ) ) +
+    geom_line()
+  debug( smoother )
+}
+
+
+
+
 
 ###### Calculating and testing average impact  #######
 
 predictions = process.outcome.model( "pbail", meck,
-                                            t0=t0, R = 1000,
+                                            t0=t0, R = R,
                                             summarize = FALSE, smooth=FALSE )
 
 sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
@@ -314,10 +387,10 @@ sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs
 
-# Look at different range of post-policy months (6 months to 18 months out)
+# Look at different range of post-policy months (6 months to 12 months out)
 # changes impact estimate.
 sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
-                                      predictions = predictions, months = 6:18 )
+                                      predictions = predictions, months = 6:12 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs

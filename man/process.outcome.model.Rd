@@ -4,9 +4,19 @@
 \alias{process.outcome.model}
 \title{Generate an ITS extrapolation simulation.}
 \usage{
-process.outcome.model(outcomename, dat, t0, R = 400, summarize = FALSE,
-  smooth = FALSE, smoother = NULL, fit.model = fit.model.default,
-  covariates = NULL, plug.in = FALSE, ...)
+process.outcome.model(
+  outcomename,
+  dat,
+  t0,
+  R = 400,
+  summarize = FALSE,
+  smooth = FALSE,
+  smoother = NULL,
+  fit.model = fit.model.default,
+  covariates = NULL,
+  plug.in = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outcomename}{Name of column in dat containing the time series.}
@@ -31,6 +41,16 @@ fit.model.}
 
 \item{plug.in}{Use the estimated parameters as fixed and do not include that
 extra uncertainty in the simulation.}
+}
+\value{
+If summarize=TRUE, A dataframe with several columns of interest and
+  one row per month of data. The columns are Ymin and Ymax, the limits of the
+  envelope, 'range', the range of the envelope, 'SE', the standard deviation
+  of the trajectories at that time point, `Ysmooth` the median smoothed value
+  at that time point (if smoothing), `Ystar` the median unsmoothed value at
+  that time point (regardless of smooth flag), `Y`, the observed outcome,
+  `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
+  outcome given the model with no autoregressive aspect.
 }
 \description{
 Take a given outcome variable, and fit our model and generate the impact
