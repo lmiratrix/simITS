@@ -21,8 +21,6 @@ aggregate_simulation_results(
 
 \item{summarizer}{A function to calculate some summary quantity, Default:
 calculate.average.outcome}
-
-\item{...}{Arguments to be passed to summarizer()}
 }
 \value{
 List of the test statistic and reference distribution.

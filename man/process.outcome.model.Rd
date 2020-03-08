@@ -41,6 +41,8 @@ fit.model.}
 
 \item{plug.in}{Use the estimated parameters as fixed and do not include that
 extra uncertainty in the simulation.}
+
+\item{...}{Extra arguments to be passed to other function.}
 }
 \description{
 Take a given outcome variable, and fit our model and generate the impact

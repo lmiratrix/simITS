@@ -1,7 +1,4 @@
 
-library( testthat )
-library( tidyverse )
-library( simITS )
 
 context("test-summarization-testing")
 

@@ -1,4 +1,9 @@
 library(testthat)
 library(simITS)
-
+library( tidyverse )
+library( nlme )
+library( dplyr )
+library( survival )
+library( summarizer )
+library( boot )
 test_check("simITS")

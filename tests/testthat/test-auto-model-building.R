@@ -1,8 +1,4 @@
-
 # Testing the seasonality model building stuff
-
-
-library( testthat )
 
 context("test auto model building")
 

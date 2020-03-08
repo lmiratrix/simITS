@@ -4,7 +4,7 @@
 \alias{calculate.average.outcome}
 \title{Summary function for summarize.simulation.results}
 \usage{
-calculate.average.outcome(res, outcomename, months = 1:18, ...)
+calculate.average.outcome(res, outcomename, months = 1:54, ...)
 }
 \arguments{
 \item{res}{Dataframe of a single series (simulated or otherwise)}

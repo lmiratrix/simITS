@@ -25,7 +25,6 @@ fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
   M0
 }
 
-
 #' Make a fit.model that takes a seasonality component
 #'
 #' This method returns a function that will fit a model both with and without
@@ -494,10 +493,10 @@ add.lagged.covariates = function( dat,
 #' @export
 #'
 calculate.average.outcome = function( res, outcomename,
-                                      months = 1:18,
+                                      months = 1:54,
                                       ... ) {
 
-  mts = filter( res, month %in% months )
+  mts = filter( res, months %in% months )
   mean( mts[[outcomename]] )
 }
 
@@ -513,7 +512,6 @@ calculate.average.outcome = function( res, outcomename,
 #' @param outcomename Outcome to use.
 #' @param summarizer A function to calculate some summary quantity, Default:
 #'   calculate.average.outcome
-#' @param ... Arguments to be passed to summarizer()
 #' 
 #' @return List of the test statistic and reference distribution.
 #'
@@ -562,8 +560,7 @@ aggregate_simulation_results = function( orig.data, predictions,
 #'   details of all the runs are returned.
 #' @export
 extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
-                              smoother = smooth.series, full.output = FALSE, ...,
-                              fix.params = FALSE) {
+                              smoother = smooth.series, full.output = FALSE,fix.params = FALSE, ...) {
   require( tidyverse )
 
   if ( fix.params ) {
@@ -667,6 +664,7 @@ drop.extra.covariates = function( M0, data  ) {
 #'   fit.model.
 #' @param plug.in Use the estimated parameters as fixed and do not include that
 #'   extra uncertainty in the simulation.
+#' @param ... Extra arguments to be passed to other function.
 #' @export
 process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
                                   smooth=FALSE, smoother = NULL,
@@ -698,7 +696,7 @@ process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
     }
 
     res = extrapolate.model( M0, outcomename, dat, t0, R, summarize=summarize, smooth=smooth,
-                       smoother=smoother, fix.params = plug.in, ... )
+                       smoother=smoother, fix.params = plug.in )
 
     if ( summarize ) {
       res$Ybar = generate.Ybars( fit.model, outcomename, t0, dat )
