@@ -1,8 +1,4 @@
 
-library( testthat )
-library( tidyverse )
-library( simITS )
-
 context("test-general-tests")
 
 
@@ -31,7 +27,7 @@ test_that("The four types of smooth vs summarize calls work", {
                                  summarize = FALSE, smooth=TRUE,
                                  post.only = FALSE )
   expect_true( !all( is.na( preds$Ystar ) ) )
-  expect_true( all( !is.na( preds$Ysmooth ) ) )
+  #expect_true( all( !is.na( preds$Ysmooth ) ) )
   expect_true( nrow( preds ) == 10 * nrow( mecklenberg ) )
 
 
@@ -39,7 +35,7 @@ test_that("The four types of smooth vs summarize calls work", {
                                  t0=t0, R = 10,
                                  summarize = TRUE, smooth=TRUE, post.only = FALSE )
   expect_true( !all( is.na( preds$Ystar ) ) )
-  expect_true( all( !is.na( preds$Ysmooth ) ) )
+  #expect_true( all( !is.na( preds$Ysmooth ) ) )
   expect_true( nrow( preds ) == nrow( mecklenberg ) )
 
 })

@@ -41,6 +41,8 @@ fit.model.}
 
 \item{plug.in}{Use the estimated parameters as fixed and do not include that
 extra uncertainty in the simulation.}
+
+\item{...}{Extra arguments to be passed to other function.}
 }
 \value{
 If summarize=TRUE, A dataframe with several columns of interest and

@@ -14,9 +14,8 @@ extrapolate.model(
   smooth = FALSE,
   smoother = smooth.series,
   full.output = FALSE,
-  ...,
-  fix.params = FALSE
-)
+  fix.params = FALSE,
+  ...
 }
 \arguments{
 \item{M0}{The fit model}
@@ -41,10 +40,10 @@ is smooth.series()}
 
 \item{full.output}{TRUE means smoother returns residuals as well as smoothed series.}
 
-\item{...}{Extra arguments to be passed to smoother (e.g, bandwidth).}
-
 \item{fix.params}{Keep the parameters in the model M0 as fixed; do not add
 parameter uncertainty.}
+
+\item{...}{Extra arguments to be passed to smoother (e.g, bandwidth).}
 }
 \value{
 Dataframe with columns corresponding to the simulations.  If
