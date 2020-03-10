@@ -26,8 +26,14 @@ values for.}
 \item{pi.star}{The target weights.  Each month will have its groups
 re-weighted to match these target weights.}
 
+\item{is.count}{Indicator of whether outcome is count data or a continuous
+measure (this impacts how aggregation is done).}
+
 \item{include.aggregate}{Include aggregated (unadjusted) totals in the output
 as well.}
+
+\item{covariates}{Covariates to be passed to aggregation (list of string
+variable names).}
 }
 \description{
 Adjust an outcome based on the group weights.

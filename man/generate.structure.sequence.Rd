@@ -7,6 +7,14 @@ is a utility function used by the make.autoregressive.series() method.}
 \usage{
 generate.structure.sequence(fit0, dat)
 }
+\arguments{
+\item{fit0}{Model fit to data.}
+
+\item{dat}{Data to predict outcomes for using fit0.}
+}
+\value{
+Predictions as a numeric vector.
+}
 \description{
 We do this so we can subtract this part off before smoothing so our smoother
 doesn't have to try and capture the seasonality stuff.

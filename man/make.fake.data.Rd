@@ -22,6 +22,8 @@ make.fake.data(
 
 \item{t.max}{Index of last month}
 
+\item{t0}{Last pre-policy time point}
+
 \item{rho}{Autocorrelation}
 
 \item{sd.omega}{Standard deviation of the true residual}
@@ -37,8 +39,6 @@ make.fake.data(
 \item{coef.tx}{Coefficient for treatment post-policy (list of 3, initial
 offset, initial slope, additional slope past 12 months).  Treatment is a
 piecewise linear function.}
-
-\item{t.0}{Last pre-policy time point}
 }
 \value{
 A \code{data.frame} having \code{month} , \code{temperature} ,

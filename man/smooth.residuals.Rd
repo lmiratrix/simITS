@@ -19,6 +19,10 @@ smooth.residuals(
 \item{res}{A dataframe with a month column and 'outcomename' column, which is
 the column to be smoothed.}
 
+\item{t0}{Last month of pre-policy.  Will start predicting at t0+1.}
+
+\item{outcomename}{The name of the column in dat which is our outcome.}
+
 \item{post.only}{If TRUE fit model and smooth post-policy only. WHY fit model
 on post-policy data only?  Because this will make sure the fixed pre-policy
 does not dominate too much?  We are focusing on post-policy so we want a

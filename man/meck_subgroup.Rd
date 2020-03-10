@@ -8,9 +8,9 @@
 \describe{
   \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
   \item{\code{n.cases}}{integer Number of cases total that month}
-  \item{\code{category}}{character Class of subgroup}
-  \item{\code{n}}{integer Number of cases in subgroup}
+  \item{\code{n.bail}}{interger number of bail cases that month}
   \item{\code{pbail}}{double Proportion of cases in subgroup assigned bail} 
+  \item{\code{category}}{character Category of group}
 }}
 \usage{
 meck_subgroup

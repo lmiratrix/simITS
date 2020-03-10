@@ -6,7 +6,7 @@
 \title{Mechlenberg PSA Reform Data}
 \format{A data frame with 54 rows and 10 variables:
 \describe{
-  \item{\code{month_t}}{integer Month, with 0 being month of policy implementation.}
+  \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
   \item{\code{karr}}{integer COLUMN_DESCRIPTION}
   \item{\code{pbail}}{double Proportion of cases in a given month assigned bail (or outright detention).}
   \item{\code{pptrel}}{double COLUMN_DESCRIPTION}

@@ -9,6 +9,7 @@ Description: Uses simulation to create prediction intervals for post-policy outc
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 3.5.0)
 Suggests: 
     knitr,
     nlme,
@@ -16,7 +17,6 @@ Suggests:
     survival,
     boot,
     testthat,
-    tidyverse,
-    summarizer
+    tidyverse
 RoxygenNote: 7.0.2
 VignetteBuilder: knitr

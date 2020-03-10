@@ -19,6 +19,7 @@
 #'   going to post stratify on.  This dataframe should also have an 'N' column
 #'   indicating the number of cases that make up each given row. It should have
 #'   a 'month' column for the time.
+#' @param N Name of variable holding the counts (weight) in each group.
 #' @export
 calculate.group.weights = function( groupname, dat, t.min, t.max = max( dat$month ), N = "N" ) {
 
@@ -41,6 +42,9 @@ calculate.group.weights = function( groupname, dat, t.min, t.max = max( dat$mont
 #' This will take a dataframe with each row being the outcomes, etc., for a
 #' given group for a given month and aggregate those groups for each month.
 #'
+#' @param dat Dataframe of data
+#' @param outcomename String name of the outcome variable in dat.
+#' @param groupname Name of grouping variable to post-stratify on. 
 #' @param rich If TRUE, add a bunch of extra columns with proportions of the
 #'   month that are each group and so forth.
 #' @param is.count If TRUE the data are counts, and should be aggregated by sum
@@ -49,7 +53,7 @@ calculate.group.weights = function( groupname, dat, t.min, t.max = max( dat$mont
 #'   rich dataframe.  These are not used in this method for any calculations.
 #'   Pass as list of column names of dat
 #' @export
-aggregate.data = function( dat, outcomename, groupname, is.count=FALSE,
+aggregate_data = function( dat, outcomename, groupname, is.count=FALSE,
                            rich = TRUE, covariates =NULL ) {
 
     if ( is.count ) {
@@ -101,7 +105,7 @@ aggregate.data = function( dat, outcomename, groupname, is.count=FALSE,
 
 
 #' Adjust an outcome based on the group weights.
-#' 
+#'
 #' @param outcomename Name of column that has the outcome to calculated adjusted
 #'   values for.
 #' @param groupname Name of categorical covariate that determines the groups.
@@ -111,6 +115,10 @@ aggregate.data = function( dat, outcomename, groupname, is.count=FALSE,
 #'   represented in each row.
 #' @param pi.star The target weights.  Each month will have its groups
 #'   re-weighted to match these target weights.
+#' @param is.count Indicator of whether outcome is count data or a continuous
+#'   measure (this impacts how aggregation is done).
+#' @param covariates Covariates to be passed to aggregation (list of string
+#'   variable names).
 #' @export
 adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
                         include.aggregate = FALSE,
@@ -140,7 +148,7 @@ adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
     adj.dat$.Y.adj = adj.dat$.Y = NULL
 
     if ( include.aggregate ) {
-        sdat = aggregate.data( dat, outcomename, groupname, is.count, covariates = covariates )
+        sdat = aggregate_data( dat, outcomename, groupname, is.count, covariates = covariates )
         adj.dat = merge( adj.dat, sdat, by=c("N","month"), all=TRUE )
     }
 
@@ -158,6 +166,10 @@ adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
 #' This code makes synthetic grouped data that can be used to illustrate
 #' benefits of post stratification.
 #'
+#' @param t.min Index of first month
+#' @param t.max Index of last month
+#' @param t0 last pre-policy timepoint
+#' @param method Type of post-stratification structure to generate.
 #' @export
 make.fake.group.data = function( t.min, t0, t.max, method=c("complex","linear","jersey") ) {
     stopifnot( t.min < t0 )
@@ -272,12 +284,12 @@ if ( FALSE ) {
     dat = make.fake.group.data( t.min, t0, t.max, method = "jersey" )
     head( dat )
 
-    ss = aggregate.data( dat, "prop", "type", rich=TRUE )
+    ss = aggregate_data( dat, "prop", "type", rich=TRUE )
     head( ss )
     plot( ss$pi.drug )
     
-    sdat = aggregate.data( dat, "prop", "type", is.count=FALSE, rich = FALSE )
-    sdat2 = aggregate.data( dat, "Y", "type", is.count=TRUE, rich= FALSE )
+    sdat = aggregate_data( dat, "prop", "type", is.count=FALSE, rich = FALSE )
+    sdat2 = aggregate_data( dat, "Y", "type", is.count=TRUE, rich= FALSE )
     sdat = merge( sdat, sdat2, by=c("month","N") )
     head( sdat )
     sdat$type = "all"
@@ -310,7 +322,7 @@ if ( FALSE ) {
 
     # looking at rates
     head( dat )
-    sdat = aggregate.data( dat, "prop", "type", is.count=FALSE )
+    sdat = aggregate_data( dat, "prop", "type", is.count=FALSE )
 
     adjdat = adjust.data( dat, "prop", "type", pis )
     head( adjdat )
@@ -334,7 +346,7 @@ if ( FALSE ) {
 
 
     # Looking at counts
-    sdat = aggregate.data( dat, "Y", "type", is.count=TRUE )
+    sdat = aggregate_data( dat, "Y", "type", is.count=TRUE )
     head( sdat )
 
     adjdat = adjust.data( dat, "Y", "type", pis, is.count = TRUE )

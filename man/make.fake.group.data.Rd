@@ -11,6 +11,15 @@ make.fake.group.data(
   method = c("complex", "linear", "jersey")
 )
 }
+\arguments{
+\item{t.min}{Index of first month}
+
+\item{t0}{last pre-policy timepoint}
+
+\item{t.max}{Index of last month}
+
+\item{method}{Type of post-stratification structure to generate.}
+}
 \description{
 This code makes synthetic grouped data that can be used to illustrate
 benefits of post stratification.

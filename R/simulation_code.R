@@ -7,7 +7,7 @@
 #'
 #' @param t.min Index of first month
 #' @param t.max Index of last month
-#' @param t.0 Last pre-policy time point
+#' @param t0 Last pre-policy time point
 #' @param rho Autocorrelation
 #' @param sd.omega Standard deviation of the true residual
 #' @param coef.line Intercept and slope of the main trendline (list of 2).
