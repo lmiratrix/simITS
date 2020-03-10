@@ -44,6 +44,16 @@ extra uncertainty in the simulation.}
 
 \item{...}{Extra arguments to be passed to other function.}
 }
+\value{
+If summarize=TRUE, A dataframe with several columns of interest and
+  one row per month of data. The columns are Ymin and Ymax, the limits of the
+  envelope, 'range', the range of the envelope, 'SE', the standard deviation
+  of the trajectories at that time point, `Ysmooth` the median smoothed value
+  at that time point (if smoothing), `Ystar` the median unsmoothed value at
+  that time point (regardless of smooth flag), `Y`, the observed outcome,
+  `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
+  outcome given the model with no autoregressive aspect.
+}
 \description{
 Take a given outcome variable, and fit our model and generate the impact
 results.

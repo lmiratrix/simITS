@@ -31,6 +31,10 @@ bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 want to smooth with an absolute bandwidth, not one as function of how long
 the time series is.}
 
+\item{fit.model}{A function that takes data, fits a linear model, and returns
+the fit model. This function needs an option to include (or not) lagged
+covariates.}
+
 \item{covariates}{A dataframe with all covariates needed in the model fitting
 defined by fit.model.}
 

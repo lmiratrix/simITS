@@ -2,13 +2,28 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{make.model.smoother}
 \alias{make.model.smoother}
-\title{Make a smoother that fits a model and smooths residuals}
+\title{Make a smoother that fits a model and then smooths residuals}
 \usage{
 make.model.smoother(fit.model, covariates)
+}
+\arguments{
+\item{fit.model}{A function that takes data, fits a linear model, and returns
+the fit model. This function needs an option to include (or not) lagged
+covariates.}
+
+\item{covariates}{A dataframe with all covariates needed in the model fitting
+defined by fit.model.}
 }
 \value{
 a smoother function that can be passed to the smoothing routines.
 }
 \description{
-Make a smoother that fits a model and smooths residuals
+This helper function gives back a function that takes the resulting
+simulation data from a single iteration of the simulation, and fits
+'fit.model' to it, smoothes the residuals, and puts the predictions from
+'fit.model' back.
+}
+\details{
+This can be used to build smoothers that smooth using models other than the
+model being used for extrapolation (e.g., a model without temperature).
 }

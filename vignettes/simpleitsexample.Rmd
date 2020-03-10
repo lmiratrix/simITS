@@ -108,7 +108,7 @@ data( newjersey )
 head( newjersey )
 fit.season.model.qtemp =  make.fit.season.model( ~ temperature + Q2 + Q3 + Q4 )
 
-envelope = process.outcome.model( "Y", newjersey, t0=-7, R = 100, 
+envelope = process.outcome.model( "n.warrant", newjersey, t0=-7, R = 100, 
                                   summarize = TRUE, smooth=TRUE, 
                                   fit.model = fit.season.model.qtemp )
 head( envelope )

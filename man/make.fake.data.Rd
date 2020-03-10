@@ -16,6 +16,7 @@ make.fake.data(
   coef.sin = c(0, 0),
   coef.tx = c(0, 0.25, 5)
 )
+
 }
 \arguments{
 \item{t.min}{minimum time}
@@ -41,6 +42,7 @@ make.fake.data(
 \value{
 A \code{data.frame} having \code{month} , \code{temperature} , \code{sin.m} , \code{cos.m} , \code{Q1}, 
 \code{Q2} , \code{Q3}, \code{Q4}, \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
+
 }
 \description{
 Has heavy seasonality, and an extra bump at 12 months post-policy

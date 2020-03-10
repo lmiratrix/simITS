@@ -31,11 +31,13 @@ fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
 #' lagged outcomes.
 #'
 #' You hand it a formula object specifying the seasonality, e.g., " ~ Q2 + Q3 +
-#' Q4", if you have quarterly season effects, and it will assume you want models
-#' with a linear month component as well.
+#' Q4", if you have quarterly season effects. This method assumes you want
+#' models with a linear month component as well, and will add that and an
+#' intercept in automatically.
 #'
 #' @param formula Formula specifying seasonality.  No outcome or month needed.
-#' @param no.lag Formula specifying additional variables to not lag (usually due to colinearity).
+#' @param no.lag Formula specifying additional variables to not lag (usually used due
+#'   to colinearity of lagged outcomes, such as with a sin and cos component).
 #' @return A function that takes dat, outcomename, and a lagless flag (see,
 #'   e.g., fit.model.default)
 #' @export
@@ -86,11 +88,11 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
 
 
 
-#' Add the model predictions to a series, ignoring the lagged components.
+#' Generate the model predictions for a series, ignoring lagged components.
 #'
 #' Generate Ybar given a dataframe 'dat'. Ybar is our model predictions without
-#' the lagged outcome term or residual term.  This is basically the "structural"
-#' component of our model, which includes seasonality.
+#' any lagged terms, fit to the pre-policy data only. This is basically the
+#' "structural" component of our model, which can include seasonality.
 #'
 #' This is so we can show trendlines and so forth on plots.
 #'
@@ -278,6 +280,9 @@ smooth.series = function( res, outcomename, t0,
 #'
 #' @param res A dataframe with a month column and 'outcomename' column, which is
 #'   the column to be smoothed.
+#' @param fit.model A function that takes data, fits a linear model, and returns
+#'   the fit model. This function needs an option to include (or not) lagged
+#'   covariates.
 #' @param covariates A dataframe with all covariates needed in the model fitting
 #'   defined by fit.model.
 #' @param smooth_k A rough proxy for the number of observations to primarily
@@ -331,14 +336,30 @@ smooth.residuals = function( res, t0, outcomename,
 
 
 
-#' Make a smoother that fits a model and smooths residuals
+#' Make a smoother that fits a model and then smooths residuals
 #'
+#' This helper function gives back a function that takes the resulting
+#' simulation data from a single iteration of the simulation, and fits
+#' 'fit.model' to it, smoothes the residuals, and puts the predictions from
+#' 'fit.model' back.
+#'
+#' This can be used to build smoothers that smooth using models other than the
+#' model being used for extrapolation (e.g., a model without temperature).
+#'
+#' @inheritParams smooth.residuals
+#' 
 #' @return a smoother function that can be passed to the smoothing routines.
+#'
+#' @export
 make.model.smoother = function( fit.model, covariates ) {
 
   f = function( res, t0, outcomename, post.only = TRUE, smooth_k = SMOOTH_K ) {
-    smooth.residuals( res=res, t0=t0, outcomename=outcomename, post.only=post.only, smooth_k=smooth_k,
-                      fit.model=fit.model, covariates=covariates )
+    smooth.residuals( res=res, t0=t0, 
+                      outcomename=outcomename, 
+                      post.only=post.only, 
+                      smooth_k=smooth_k,
+                      fit.model=fit.model, 
+                      covariates=covariates )
   }
 
   return( f )
@@ -519,9 +540,9 @@ calculate.average.outcome = function( res, outcomename,
 aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
-
+browser()
   summary = predictions %>%
-    nest( -Run ) %>%
+    nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
     mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
                  unnest( t )
 
@@ -572,10 +593,10 @@ extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
   # If we are smoothing, smooth all the simulation trajectories
   if ( smooth ) {
     predictions = predictions %>%
-      nest( -Run ) %>%
+      nest( data = c(month, Ybar, Ystar) ) %>%
       mutate( Ysmooth = map( data, smoother,
                              outcomename="Ystar", t0 = t0, ... ) ) %>%
-      unnest()
+      unnest(cols = c(data, Ysmooth))
   } else {
     predictions$Ysmooth = NA
   }
@@ -605,7 +626,7 @@ extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
                    Ysmooth = median( Ysmooth, na.rm=TRUE  ),
                    Ystar = median( Ystar, na.rm=TRUE  ) )
 
-      # Add in smoothed true data line, smoothing the same was as we did with our synthetic lines.
+      # Add in smoothed true data line, smoothing the same way as we did with our synthetic lines.
       full.dat = data.frame( month=dat$month, Y = dat[[outcomename]] )
       full.dat$Ysmooth1 = smoother( full.dat, outcomename="Y", t0=t0, ... )
 
@@ -665,6 +686,14 @@ drop.extra.covariates = function( M0, data  ) {
 #' @param plug.in Use the estimated parameters as fixed and do not include that
 #'   extra uncertainty in the simulation.
 #' @param ... Extra arguments to be passed to other function.
+#' @return If summarize=TRUE, A dataframe with several columns of interest and
+#'   one row per month of data. The columns are Ymin and Ymax, the limits of the
+#'   envelope, 'range', the range of the envelope, 'SE', the standard deviation
+#'   of the trajectories at that time point, `Ysmooth` the median smoothed value
+#'   at that time point (if smoothing), `Ystar` the median unsmoothed value at
+#'   that time point (regardless of smooth flag), `Y`, the observed outcome,
+#'   `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
+#'   outcome given the model with no autoregressive aspect.
 #' @export
 process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
                                   smooth=FALSE, smoother = NULL,
@@ -736,14 +765,14 @@ make.envelope.graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
         geom_line( aes( y=Y ), alpha = 0.6 ) + geom_point( aes( y=Y ) ) +
         geom_vline( xintercept=t0, col="red" ) +
         geom_point( x=t0, y=Y.init, col="red" ) +
-      geom_line( data=filter( envelope, month >= t0 ), aes( y=Ystar ) ) +
-        geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="green" ) +
-      labs( ylab=ylab, xlab=xlab )
+        geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="green", na.rm=TRUE ) +
+        labs( ylab=ylab, xlab=xlab )
 
     if ( has.smooth ) {
-      plt = plt +       geom_line( aes( y=Ysmooth ), alpha=0.7, color="green" ) +
-        geom_line( aes( y=Ysmooth1 ), color = "red" )
-
+      plt = plt + geom_line( aes( y=Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
+        geom_line( aes( y=Ysmooth1 ), color = "red", na.rm=TRUE )
+    } else {
+      plt = plt + geom_line( data=filter( envelope, month >= t0 ), aes( y=Ystar ) )
     }
 
     plt

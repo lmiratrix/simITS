@@ -1,16 +1,20 @@
 ##
-## (FAKE) New Jersey Example
+## New Jersey Example
 ##
-## This generates all plots used in the technical report (pending NJ official
-## data approval).
+## This generates all plots used in the methods paper.
 ## 
+
+
 
 library( tidyverse )
 library( simITS )
 
-R = 1000
+FIG_WIDTH = 3.7
+FIG_HEIGHT = 2.8
 
-t0 = 0
+R = 10000
+
+t0 = -8
 
 # Set up ggplot
 library( ggthemes )
@@ -40,13 +44,13 @@ fit.season.model.sin =  make.fit.season.model( ~ 1, no.lag = ~ sin.m + cos.m )
 fit.season.model.sintemp =  make.fit.season.model( ~ sin.m + cos.m + Q2 + Q3 + Q4 )
 
 
-mod = fit.season.model.qtemp( dat = filter( newjersey, month <= t0 ), "Y", lagless=TRUE )
+mod = fit.season.model.qtemp( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=TRUE )
 summary( mod )
 
 
 # Make all the lagged covariates based on the functions
-newjersey = add.lagged.covariates( newjersey, outcomename = "Y", covariates=fit.season.model.qtemp )
-newjersey = add.lagged.covariates( newjersey, outcomename = "Y", covariates=fit.season.model.sin )
+newjersey = add.lagged.covariates( newjersey, outcomename = "n.warrant", covariates=fit.season.model.qtemp )
+newjersey = add.lagged.covariates( newjersey, outcomename = "n.warrant", covariates=fit.season.model.sin )
 head( newjersey )
 
 
@@ -54,19 +58,20 @@ head( newjersey )
 #### Explore the raw data ####
 
 
-ggplot( newjersey, aes( x=month, y=Y)) +
-  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=0.5, xmax=max( newjersey$month), fill="lightgray"), col = "lightgray", alpha=0.25) +
+ggplot( newjersey, aes( x=month, y=n.warrant)) +
+  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=0.5, xmax=max( newjersey$month), fill="gray"), col = "gray") +
+  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=t0+0.5, xmax=0.5, fill="lightgray"), col = "lightgray") +
   scale_fill_identity(name = "", guide = "none", labels = c('Post Policy era')) +
   geom_hline( yintercept = 0, col="black") +
   geom_line( col="black", lty=1, lwd=0.5) +
   geom_point() +
-  coord_cartesian( ylim=c(0,3000), expand=FALSE ) +
-  labs( title = " ", y = "Number warrant arrests", x = " " )
-ggsave( "my_examples/plots/new_jersey_raw.pdf", width=4, height=3 )
+ coord_cartesian( ylim=c(0,7000), expand=FALSE ) +
+  labs( title = " ", y = "Number warrant arrests", x = "Month" )
+ggsave( "my_examples/plots/new_jersey_raw.pdf", width=FIG_WIDTH, height=FIG_HEIGHT )
 
 
 # Funky version of the prior plot to make a pretty/interesting title slide in talk
-ggplot( newjersey, aes( month, Y ) ) +
+ggplot( newjersey, aes( month, n.warrant ) ) +
   geom_line() + geom_point( size=0.5) +
   labs( y="Total number of cases", x="month" ) +
   #  coord_cartesian( ylim=c(0,20000 ) ) +
@@ -76,11 +81,12 @@ ggsave( "my_examples/plots/new_jersey_slidetitle.pdf", width=6.5, height=2 )
 
 
 # How does temp correlate with total number of cases?
-newjersey = mutate( newjersey, postpolicy = ifelse( month <= 0, ifelse( month < -12, "pre", "mid" ), "post" ) )
-ggplot( newjersey, aes( temperature, Y, pch=postpolicy, col=postpolicy ) ) +
-  geom_point( size=3) +
-  labs( y="Total number of cases", x="Average temperature in New Jersey" )
-ggsave( "my_examples/plots/new_jersey_temp.pdf", width=4, height=3 )
+newjersey = mutate( newjersey, postpolicy = 
+                      factor( ifelse( month <= 0, ifelse( month < -8, "Pre", "Rollout" ), "Post" ), levels=c("Pre", "Rollout", "Post") ) )
+ggplot( newjersey, aes( temperature, n.warrant, pch=postpolicy, col=postpolicy ) ) +
+  geom_point( size=1) +
+  labs( y="Total number of cases", x="Average temperature in New Jersey", col="Period:", pch="Period:")
+ggsave( "my_examples/plots/new_jersey_temp.pdf", width=FIG_WIDTH, height=FIG_HEIGHT )
 
 
 
@@ -91,13 +97,13 @@ ggsave( "my_examples/plots/new_jersey_temp.pdf", width=4, height=3 )
 
 # Fit the various different seasonality models (without lags, to see how well models fit)
 nj.pre = filter( newjersey, month < -6 )
-newjersey$model.q = predict( fit.season.model.q(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
-newjersey$model.qtemp = predict( fit.season.model.qtemp(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
-newjersey$model.temp = predict( fit.season.model.temp(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
-newjersey$model.sin = predict( fit.season.model.sin(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
-newjersey$model.sintemp = predict( fit.season.model.sintemp(nj.pre,"Y", lagless=TRUE), newdata=newjersey )
+newjersey$model.q = predict( fit.season.model.q(nj.pre,"n.warrant", lagless=TRUE), newdata=newjersey )
+newjersey$model.qtemp = predict( fit.season.model.qtemp(nj.pre,"n.warrant", lagless=TRUE), newdata=newjersey )
+newjersey$model.temp = predict( fit.season.model.temp(nj.pre,"n.warrant", lagless=TRUE), newdata=newjersey )
+newjersey$model.sin = predict( fit.season.model.sin(nj.pre,"n.warrant", lagless=TRUE), newdata=newjersey )
+newjersey$model.sintemp = predict( fit.season.model.sintemp(nj.pre,"n.warrant", lagless=TRUE), newdata=newjersey )
 
-njplot = newjersey %>% dplyr::select( month, Y, model.q, model.qtemp, model.temp, model.sin, model.sintemp ) %>%
+njplot = newjersey %>% dplyr::select( month, n.warrant, model.q, model.qtemp, model.temp, model.sin, model.sintemp ) %>%
   gather( model.q, model.qtemp, model.temp, model.sin, model.sintemp, key="model", value="Y.hat" )
 
 head( njplot )
@@ -108,23 +114,26 @@ njplot = mutate( njplot, model = fct_recode( model,
                                              "Temp" = "model.temp",
                                              "Sin+Temp" = "model.sintemp"))
 
-njplot4 = filter( njplot, model != "Sin+Temp" )
+njplot4 = filter( njplot, model != "Sin+Temp", month < -6 )
+
 ggplot( njplot4, aes( x=month ) ) +
   facet_wrap( ~ model ) +
-  geom_line( aes( y=Y ), col="grey" ) + #+ geom_point( aes( y=Y ), col="grey" ) +
-  geom_line( aes( y=Y.hat ) )  #, col=model, group=model, lty=model
+  geom_line( aes( y=n.warrant ), col="grey" ) + #+ geom_point( aes( y=n.warrant ), col="grey" ) +
+  geom_line( aes( y=Y.hat ) ) +  #, col=model, group=model, lty=model
+  labs( x="month", y="# warrants" )
+ggsave( "my_examples/plots/fourmodels.pdf", width=FIG_WIDTH, height=FIG_HEIGHT )
 
-#ggsave( "my_examples/plots/fourmodels.pdf", width = 4, height = 3 )
 ggplot( filter( njplot4, month <= t0 ), aes( x=month ) ) +
   facet_wrap( ~ model, nrow = 1 ) +
-  geom_line( aes( y=Y ), col="grey" ) + #+ geom_point( aes( y=Y ), col="grey" ) +
-  geom_line( aes( y=Y.hat ) )  #, col=model, group=model, lty=model
-ggsave( "my_examples/plots/fourmodels.pdf", width = 10, height = 2 )
+  geom_line( aes( y=n.warrant ), col="grey" ) + #+ geom_point( aes( y=n.warrant ), col="grey" ) +
+  geom_line( aes( y=Y.hat ) ) +  #, col=model, group=model, lty=model
+  labs( x="month", y="# warrants" )
+ggsave( "my_examples/plots/fourmodels_row.pdf", width = 10, height = 2 )
 
 
 # Look at residuals after the model fit
 head( njplot )
-njplot = mutate( njplot, resid = Y.hat - Y )
+njplot = mutate( njplot, resid = Y.hat - n.warrant )
 njsub = filter( njplot, month < 0 )
 ggplot( filter( njsub, model != "Sin+Temp" ), 
         aes( x=month ) ) +
@@ -148,7 +157,7 @@ save.nj.plot = function( envelope, filename ) {
     geom_vline( xintercept=c(0,t0), col="red", lty=c(2,1) ) +
     geom_hline( yintercept = 0 ) 
   plt
-  ggsave( paste0( "my_examples/plots/", filename, ".pdf" ), plot = plt, width=4, height=3 )
+  ggsave( paste0( "my_examples/plots/", filename, ".pdf" ), plot = plt, width=FIG_WIDTH, height=FIG_HEIGHT )
   
   plt
 }
@@ -156,7 +165,7 @@ save.nj.plot = function( envelope, filename ) {
 
 
 # Fit unsmoothed seasonality model and make envelope
-envelope = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=FALSE,
                                   fit.model = fit.season.model.qtemp )
 
@@ -166,7 +175,7 @@ save.nj.plot( envelope, "new_jersey")
 
 
 # Now fit smoothed seasonality model and make envelope with default model
-envelope.smooth.base = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope.smooth.base = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                              summarize = TRUE, smooth=TRUE, smooth_k = 11,
                                              fit.model = fit.season.model.qtemp )
 save.nj.plot( envelope.smooth.base, "new_jersey_smoothed_base" )
@@ -174,7 +183,7 @@ save.nj.plot( envelope.smooth.base, "new_jersey_smoothed_base" )
 
 # Now fit smoothed seasonality model and make envelope with sin smoother
 smoother = make.model.smoother( fit.model = fit.season.model.sin, covariates = newjersey )
-envelope.smooth.sin = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope.smooth.sin = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=TRUE, smoother = smoother, smooth_k = 11,
                                   fit.model = fit.season.model.qtemp )
 
@@ -186,16 +195,16 @@ save.nj.plot( envelope.smooth.sin, "new_jersey_smoothed_sin" )
 
 # Looking at smoothing
 if ( FALSE ) {
-  M0 = fit.season.model.qtemp( newjersey, "Y" )
+  M0 = fit.season.model.qtemp( newjersey, "n.warrant" )
   M0full = model.frame( M0, data=newjersey, na.action=NULL )
 
   smoother = simITS:::make.model.smoother(fit.model = fit.season.model.qtemp, covariates=M0full )
-  newjersey$sm1 = smoother( newjersey, t0=t0, "Y", smooth_k = 25 )
-  newjersey$sm2 = smoother( newjersey, t0=t0, "Y", smooth_k = 11 )
-  gg = newjersey %>% dplyr::select( month, sm1, sm2, Y ) %>%
-    gather( sm1, sm2, Y, key="series", value="Y" )
+  newjersey$sm1 = smoother( newjersey, t0=t0, "n.warrant", smooth_k = 25 )
+  newjersey$sm2 = smoother( newjersey, t0=t0, "n.warrant", smooth_k = 11 )
+  gg = newjersey %>% dplyr::select( month, sm1, sm2, n.warrant ) %>%
+    gather( sm1, sm2, n.warrant, key="series", value="n.warrant" )
   gg = filter( gg, month > -20 )
-  ggplot( gg, aes( month, Y, col=series ) ) +
+  ggplot( gg, aes( month, n.warrant, col=series ) ) +
     geom_line()
   debug( smoother )
 }
@@ -208,7 +217,7 @@ if ( FALSE ) {
   
 
 # Fit unsmoothed seasonality model and make envelope (no temp)
-envelope = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=FALSE,
                                   fit.model = fit.season.model.q )
 
@@ -221,30 +230,30 @@ plt <- make.envelope.graph( envelope, t0=t0 ) +
   geom_line( aes( y=Ybar ), col="blue" )
 
 plt
-ggsave( "my_examples/plots/new_jersey_q.pdf", width=4.75, height=3 )
+ggsave( "my_examples/plots/new_jersey_q.pdf",width=FIG_WIDTH, height=FIG_HEIGHT )
 
 
 
 head( newjersey )
-envelope.sin = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope.sin = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=FALSE,
                                   fit.model = fit.season.model.sin )
 
 plt <- make.envelope.graph( envelope.sin, t0=t0 ) +
   geom_line( aes( y=Ystar ) )
 plt
-ggsave( "my_examples/plots/new_jersey_sin.pdf", width=4.75, height=3 )
+ggsave( "my_examples/plots/new_jersey_sin.pdf",width=FIG_WIDTH, height=FIG_HEIGHT )
 
 
 
 
-envelope.q = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope.q = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=FALSE,
                                   fit.model = fit.season.model.q )
 plt <- make.envelope.graph( envelope.q, t0=t0 ) +
   geom_line( aes( y=Ystar ) )
 plt + geom_hline(yintercept= 0 )
-ggsave( "my_examples/plots/new_jersey_q.pdf", width=4.75, height=3 )
+ggsave( "my_examples/plots/new_jersey_q.pdf", width=FIG_WIDTH, height=FIG_HEIGHT )
 
 
 
@@ -256,18 +265,19 @@ ggsave( "my_examples/plots/new_jersey_q.pdf", width=4.75, height=3 )
 
 ##### Seeing how autoregression without seasonality modeling works for New Jersey  #####
 
-envelope.sm = process.outcome.model( "Y", newjersey, t0=t0, R = R,
+envelope.sm = process.outcome.model( "n.warrant", newjersey, t0=t0, R = R,
                                   summarize = TRUE, smooth=FALSE )
 
 save.nj.plot( envelope.sm, filename = "new_jersey_no_season" )
 
 
 # See how autocorrelation compares 
-M1 = fit.season.model.qtemp( dat = filter( newjersey, month <= t0 ), "Y", lagless=FALSE )
+M1 = fit.season.model.qtemp( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=FALSE )
 summary( M1 )
 
-M0 = fit.model.default( dat = filter( newjersey, month <= t0 ), "Y", lagless=FALSE )
+M0 = fit.model.default( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=FALSE )
 summary( M0 )
 
 stargazer::stargazer( M0, M1, type = "text" )
+
 
