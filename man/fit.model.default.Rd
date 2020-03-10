@@ -12,6 +12,8 @@ fit.model.default(dat, outcomename, lagless = FALSE, ...)
 \item{outcomename}{Outcome of interest}
 
 \item{lagless}{Boolean, include the lagged outcome, or not?}
+
+\item{...}{Extra arguments passed to the lm() call.}
 }
 \description{
 This fits the model outcomename ~ lag.outcome + month, with no

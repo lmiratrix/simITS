@@ -16,33 +16,34 @@ make.fake.data(
   coef.sin = c(0, 0),
   coef.tx = c(0, 0.25, 5)
 )
-
 }
 \arguments{
-\item{t.min}{minimum time}
+\item{t.min}{Index of first month}
 
-\item{t.max}{maximum time}
+\item{t.max}{Index of last month}
 
-\item{rho}{what is rho here}
+\item{rho}{Autocorrelation}
 
-\item{sd.omega}{need discription}
+\item{sd.omega}{Standard deviation of the true residual}
 
-\item{coef.line}{need discription}
+\item{coef.line}{Intercept and slope of the main trendline (list of 2).}
 
-\item{coef.q}{need discription}
+\item{coef.q}{Coefficients for the four quarters (list of 4).}
 
-\item{coef.temp}{need discription}
+\item{coef.temp}{Coefficient for temperature.}
 
-\item{coef.sin}{need discription}
+\item{coef.sin}{Coefficents for sin and cos features (list of 2)}
 
-\item{coef.tx}{need discription}
+\item{coef.tx}{Coefficient for treatment post-policy (list of 3, initial
+offset, initial slope, additional slope past 12 months).  Treatment is a
+piecewise linear function.}
 
-\item{t.0}{initial time setting usually(0)}
+\item{t.0}{Last pre-policy time point}
 }
 \value{
-A \code{data.frame} having \code{month} , \code{temperature} , \code{sin.m} , \code{cos.m} , \code{Q1}, 
-\code{Q2} , \code{Q3}, \code{Q4}, \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
-
+A \code{data.frame} having \code{month} , \code{temperature} ,
+  \code{sin.m} , \code{cos.m} , \code{Q1}, \code{Q2} , \code{Q3}, \code{Q4},
+  \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 }
 \description{
 Has heavy seasonality, and an extra bump at 12 months post-policy

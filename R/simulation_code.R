@@ -5,19 +5,22 @@
 #'
 #' Has heavy seasonality, and an extra bump at 12 months post-policy
 #'
-#' @param t.min minimum time 
-#' @param t.max maximum time 
-#' @param t.0 initial time setting usually(0)
-#' @param rho what is rho here 
-#' @param sd.omega need discription 
-#' @param coef.line need discription 
-#' @param coef.q need discription 
-#' @param coef.temp need discription 
-#' @param coef.sin need discription 
-#' @param coef.tx need discription 
+#' @param t.min Index of first month
+#' @param t.max Index of last month
+#' @param t.0 Last pre-policy time point
+#' @param rho Autocorrelation
+#' @param sd.omega Standard deviation of the true residual
+#' @param coef.line Intercept and slope of the main trendline (list of 2).
+#' @param coef.q Coefficients for the four quarters (list of 4).
+#' @param coef.temp Coefficient for temperature.
+#' @param coef.sin Coefficents for sin and cos features (list of 2)
+#' @param coef.tx Coefficient for treatment post-policy (list of 3, initial
+#'   offset, initial slope, additional slope past 12 months).  Treatment is a
+#'   piecewise linear function.
 #'
-#' @return A \code{data.frame} having \code{month} , \code{temperature} , \code{sin.m} , \code{cos.m} , \code{Q1}, 
-#' \code{Q2} , \code{Q3}, \code{Q4}, \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
+#' @return A \code{data.frame} having \code{month} , \code{temperature} ,
+#'   \code{sin.m} , \code{cos.m} , \code{Q1}, \code{Q2} , \code{Q3}, \code{Q4},
+#'   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 #'
 #' @examples
 #' simData <- make.fake.data()

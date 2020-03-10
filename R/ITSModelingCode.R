@@ -11,6 +11,7 @@ SMOOTH_K = 11
 #' @param dat Dataframe of pre-policy data to fit model to.  Needs a "month" column
 #' @param outcomename Outcome of interest
 #' @param lagless Boolean, include the lagged outcome, or not?
+#' @param ... Extra arguments passed to the lm() call.
 #' @export
 fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
   monthname = "month"
@@ -97,7 +98,12 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
 #' This is so we can show trendlines and so forth on plots.
 #'
 #' Ybar is defined for both pre and post policy datapoints.
-#'
+#' @param fit.model A function that takes data, fits a linear model, and returns
+#'   the fit model. This function needs an option to include (or not) lagged
+#'   covariates.
+#' @param outcomename String name of the outcome variable in dat.
+#' @param t0 last pre-policy timepoint
+#' @param dat Dataframe of the data.
 #' @return Predicted sequence for passed dataframe (as vector)
 #' @export
 generate.Ybars = function( fit.model, outcomename, t0, dat ) {
@@ -540,7 +546,6 @@ calculate.average.outcome = function( res, outcomename,
 aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
-browser()
   summary = predictions %>%
     nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
     mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%

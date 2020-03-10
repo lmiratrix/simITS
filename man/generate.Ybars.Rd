@@ -6,6 +6,17 @@
 \usage{
 generate.Ybars(fit.model, outcomename, t0, dat)
 }
+\arguments{
+\item{fit.model}{A function that takes data, fits a linear model, and returns
+the fit model. This function needs an option to include (or not) lagged
+covariates.}
+
+\item{outcomename}{String name of the outcome variable in dat.}
+
+\item{t0}{last pre-policy timepoint}
+
+\item{dat}{Dataframe of the data.}
+}
 \value{
 Predicted sequence for passed dataframe (as vector)
 }
