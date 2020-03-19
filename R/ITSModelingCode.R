@@ -540,7 +540,7 @@ calculate.average.outcome = function( res, outcomename,
 aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
-browser()
+#browser()
   summary = predictions %>%
     nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
     mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%

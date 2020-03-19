@@ -16,6 +16,7 @@ extrapolate.model(
   full.output = FALSE,
   fix.params = FALSE,
   ...
+)
 }
 \arguments{
 \item{M0}{The fit model}
