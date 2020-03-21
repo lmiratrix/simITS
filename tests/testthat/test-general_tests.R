@@ -6,7 +6,7 @@ test_that("The four types of smooth vs summarize calls work", {
 
   data( "mecklenberg")
   t0 = 0
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                        t0=t0, R = 10,
                                        summarize = FALSE, smooth=FALSE )
   names( preds )
@@ -14,7 +14,7 @@ test_that("The four types of smooth vs summarize calls work", {
   expect_true( all( is.na( preds$Ysmooth ) ) )
   expect_true( nrow( preds ) == nrow( mecklenberg ) * 10 )
 
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = TRUE, smooth=FALSE )
   expect_true( !all( is.na( preds$Ystar ) ) )
@@ -22,7 +22,7 @@ test_that("The four types of smooth vs summarize calls work", {
   expect_true( nrow( preds ) == nrow( mecklenberg ) )
 
 
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = FALSE, smooth=TRUE,
                                  post.only = FALSE )
@@ -31,7 +31,7 @@ test_that("The four types of smooth vs summarize calls work", {
   expect_true( nrow( preds ) == 10 * nrow( mecklenberg ) )
 
 
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = TRUE, smooth=TRUE, post.only = FALSE )
   expect_true( !all( is.na( preds$Ystar ) ) )
@@ -46,7 +46,7 @@ test_that("Smoothing with post.only=TRUE gives post smoothed only", {
   data( "mecklenberg")
   t0 = 0
 
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = FALSE, smooth=TRUE,
                                  post.only = TRUE )
@@ -56,7 +56,7 @@ test_that("Smoothing with post.only=TRUE gives post smoothed only", {
   expect_true( nrow( preds ) == 10 * nrow( mecklenberg ) )
 
 
-  preds = process.outcome.model( "pbail", mecklenberg,
+  preds = process_outcome_model( "pbail", mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = TRUE, smooth=TRUE, post.only = TRUE )
   expect_true( !all( is.na( preds$Ystar ) ) )

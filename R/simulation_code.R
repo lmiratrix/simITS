@@ -5,16 +5,16 @@
 #'
 #' Has heavy seasonality, and an extra bump at 12 months post-policy
 #'
-#' @param t.min Index of first month
-#' @param t.max Index of last month
+#' @param t_min Index of first month
+#' @param t_max Index of last month
 #' @param t0 Last pre-policy time point
 #' @param rho Autocorrelation
 #' @param sd.omega Standard deviation of the true residual
-#' @param coef.line Intercept and slope of the main trendline (list of 2).
-#' @param coef.q Coefficients for the four quarters (list of 4).
-#' @param coef.temp Coefficient for temperature.
-#' @param coef.sin Coefficents for sin and cos features (list of 2)
-#' @param coef.tx Coefficient for treatment post-policy (list of 3, initial
+#' @param coef_line Intercept and slope of the main trendline (list of 2).
+#' @param coef_q Coefficients for the four quarters (list of 4).
+#' @param coef_temp Coefficient for temperature.
+#' @param coef_sin Coefficents for sin and cos features (list of 2)
+#' @param coef_tx Coefficient for treatment post-policy (list of 3, initial
 #'   offset, initial slope, additional slope past 12 months).  Treatment is a
 #'   piecewise linear function.
 #'
@@ -23,25 +23,25 @@
 #'   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 #'
 #' @examples
-#' simData <- make.fake.data()
+#' simData <- make_fake_data()
 #' t0 <- 0
-#' simData <- make.fake.data(t.min=-40, t.max=15, t0=t0)
+#' simData <- make_fake_data(t_min=-40, t_max=15, t0=t0)
 #'
 #' @export
-make.fake.data = function( t.min = -40, t.max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
-                           coef.line = c( 20, 0.05 ),
-                           coef.q = c( 1.0, 0, -1.0, 0 ),
-                           coef.temp = 0.10,
-                           coef.sin = c( 0, 0 ),
-                           coef.tx = c( 0, 0.25, 5 ) ) {
+make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
+                           coef_line = c( 20, 0.05 ),
+                           coef_q = c( 1.0, 0, -1.0, 0 ),
+                           coef_temp = 0.10,
+                           coef_sin = c( 0, 0 ),
+                           coef_tx = c( 0, 0.25, 5 ) ) {
   require( tidyverse )
 
   #initial check for input parametes
-  stopifnot(is.numeric(t.min), is.numeric(t.max), is.numeric(t0), is.numeric(rho), is.numeric(sd.omega),
-		is.numeric(coef.line), is.numeric(coef.q) ,is.numeric(coef.temp) ,is.numeric(coef.sin) ,
-		is.numeric(coef.tx))
+  stopifnot(is.numeric(t_min), is.numeric(t_max), is.numeric(t0), is.numeric(rho), is.numeric(sd.omega),
+		is.numeric(coef_line), is.numeric(coef_q) ,is.numeric(coef_temp) ,is.numeric(coef_sin) ,
+		is.numeric(coef_tx))
   # Make some fake data
-  dat = data.frame( month = t.min:t.max )
+  dat = data.frame( month = t_min:t_max )
   N = nrow( dat )
   dat = mutate( dat, temperature = 54 + 35 * sin( 2 * pi * (month + 7) / 12 + rnorm( n(), 0, 0.5 ) ),
                 sin.m = sin( 2 * pi * month / 12 ),
@@ -54,9 +54,9 @@ make.fake.data = function( t.min = -40, t.max = 9, t0 = 0, rho = 0.50, sd.omega 
 
   # make outcome
   dmat = model.matrix( ~ 1 + month + Q1 + Q2 + Q3 + Q4 + temperature + sin.m + cos.m, data=dat )
-  dat$Ystr0 = as.numeric( dmat %*% c( coef.line, coef.q, coef.temp, coef.sin ) )
+  dat$Ystr0 = as.numeric( dmat %*% c( coef_line, coef_q, coef_temp, coef_sin ) )
   #Ypost = model.matrix( ~ 1 + I(month-t0), data=dat )
-  dat$Ystr = dat$Ystr0 + as.numeric( with( dat, coef.tx[[1]] * post + coef.tx[[2]] * post * (month-t0) + coef.tx[[3]] * (month > t0+12) ) )
+  dat$Ystr = dat$Ystr0 + as.numeric( with( dat, coef_tx[[1]] * post + coef_tx[[2]] * post * (month-t0) + coef_tx[[3]] * (month > t0+12) ) )
 
   # make autoregressive residual
   eps = rnorm( N, mean = 0, sd = sd.omega )
@@ -73,13 +73,13 @@ make.fake.data = function( t.min = -40, t.max = 9, t0 = 0, rho = 0.50, sd.omega 
 
 if ( FALSE ) {
 
-  df = make.fake.data( t.min = -80, t.max = 12, t0 = 0 )
+  df = make_fake_data( t_min = -80, t_max = 12, t0 = 0 )
   ggplot( df, aes( month, Y ) ) +
     geom_line() +
     geom_line( aes( y=Ystr ), col="red" )
 
 
-  df = make.fake.data( t.min = -80, t.max = 12, t0 = 0, sd.omega = 3,
+  df = make_fake_data( t_min = -80, t_max = 12, t0 = 0, sd.omega = 3,
                        rho = 0)
   ggplot( df, aes( month, Y ) ) +
     geom_line() +
@@ -89,12 +89,12 @@ if ( FALSE ) {
 
   t0=-12
 
-  df = make.fake.data( t.min = -80, t.max = 12, t0 = t0, sd.omega = 3,
+  df = make_fake_data( t_min = -80, t_max = 12, t0 = t0, sd.omega = 3,
                        rho = 0,
-                       coef.line = c(50, 0.05 ),
-                       coef.temp = 0,
-                       coef.sin = c( 5, 0 ),
-                       coef.tx = c( 0, 0.5, 5 ) )
+                       coef_line = c(50, 0.05 ),
+                       coef_temp = 0,
+                       coef_sin = c( 5, 0 ),
+                       coef_tx = c( 0, 0.5, 5 ) )
   ggplot( df, aes( month, Y ) ) +
     geom_line() +
     geom_line( aes( y=Ystr ), col="red" ) +
@@ -102,16 +102,16 @@ if ( FALSE ) {
     geom_hline( yintercept = 0)
 
 
-  fit.season.model.qtemp =  make.fit.season.model( ~  Q2 + Q3 + Q4 )
+  fit.season.model.qtemp =  make_fit_season_model( ~  Q2 + Q3 + Q4 )
 
   # Fit unsmoothed seasonality model and make envelope
-  envelope = process.outcome.model( "Y", df, t0=t0, R = 1000,
+  envelope = process_outcome_model( "Y", df, t0=t0, R = 1000,
                                     summarize = TRUE, smooth=FALSE,
-                                    fit.model = fit.season.model.qtemp )
+                                    fit_model = fit.season.model.qtemp )
 
   head( envelope )
 
-  plt <- make.envelope.graph( envelope, t0=t0 ) +
+  plt <- make_envelope_graph( envelope, t0=t0 ) +
     geom_vline( xintercept=c(0,t0), col="red", lty=c(2,1) ) +
     geom_hline( yintercept = 0 )
 
@@ -119,13 +119,13 @@ if ( FALSE ) {
 
 
   # Now fit smoothed seasonality model and make envelope
-  envelope.smooth = process.outcome.model( "Y", df, t0=t0, R = 1000,
+  envelope.smooth = process_outcome_model( "Y", df, t0=t0, R = 1000,
                                            summarize = TRUE, smooth=TRUE, smooth_k = 25,
-                                           fit.model = fit.season.model.qtemp )
+                                           fit_model = fit.season.model.qtemp )
 
   head( envelope.smooth )
 
-  plt <- make.envelope.graph( envelope.smooth, t0=t0 ) +
+  plt <- make_envelope_graph( envelope.smooth, t0=t0 ) +
     geom_vline( xintercept=c(0,t0), col="red", lty=c(2,1) ) +
     geom_hline( yintercept = 0 ) +
     geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.1, fill="red" )

@@ -8,7 +8,7 @@ aggregate_data(
   dat,
   outcomename,
   groupname,
-  is.count = FALSE,
+  is_count = FALSE,
   rich = TRUE,
   covariates = NULL
 )
@@ -20,7 +20,7 @@ aggregate_data(
 
 \item{groupname}{Name of grouping variable to post-stratify on.}
 
-\item{is.count}{If TRUE the data are counts, and should be aggregated by sum
+\item{is_count}{If TRUE the data are counts, and should be aggregated by sum
 rather than by mean.}
 
 \item{rich}{If TRUE, add a bunch of extra columns with proportions of the

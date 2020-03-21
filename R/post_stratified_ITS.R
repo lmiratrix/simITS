@@ -9,24 +9,24 @@
 
 
 #' Calculate overall proportion of cases in each group that lie within a given
-#' interval of time defined by t.min and t.max.
+#' interval of time defined by t_min and t_max.
 #'
 #' @param groupname Name of the column that has the grouping categorical
 #'   variable
-#' @param t.min The start month to aggregate cases over.
-#' @param t.max The final month (default is last month).
+#' @param t_min The start month to aggregate cases over.
+#' @param t_max The final month (default is last month).
 #' @param dat Dataframe with one row for each time point and group that we are
 #'   going to post stratify on.  This dataframe should also have an 'N' column
 #'   indicating the number of cases that make up each given row. It should have
 #'   a 'month' column for the time.
 #' @param N Name of variable holding the counts (weight) in each group.
 #' @export
-calculate.group.weights = function( groupname, dat, t.min, t.max = max( dat$month ), N = "N" ) {
+calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$month ), N = "N" ) {
 
   stopifnot( N %in% names( dat ) )
   
     # select target months to calibrate averages on
-    dat = filter( dat, month >= t.min, month <= t.max )
+    dat = dplyr::filter( dat, month >= t_min, month <= t_max )
 
     # calculate the total sizes for each group
     sdat = dat %>% group_by_( groupname ) %>%
@@ -47,16 +47,16 @@ calculate.group.weights = function( groupname, dat, t.min, t.max = max( dat$mont
 #' @param groupname Name of grouping variable to post-stratify on. 
 #' @param rich If TRUE, add a bunch of extra columns with proportions of the
 #'   month that are each group and so forth.
-#' @param is.count If TRUE the data are counts, and should be aggregated by sum
+#' @param is_count If TRUE the data are counts, and should be aggregated by sum
 #'   rather than by mean.
 #' @param covariates group-invariant covariates to preserve in the augmented
 #'   rich dataframe.  These are not used in this method for any calculations.
 #'   Pass as list of column names of dat
 #' @export
-aggregate_data = function( dat, outcomename, groupname, is.count=FALSE,
+aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
                            rich = TRUE, covariates =NULL ) {
 
-    if ( is.count ) {
+    if ( is_count ) {
         dd <- dat %>% group_by( month ) %>%
             summarise( .Y = sum( (!!rlang::sym(outcomename)) ),
                      #  .Y.bar = sum( (!!rlang::sym(outcomename))  ) / sum(N),
@@ -109,25 +109,25 @@ aggregate_data = function( dat, outcomename, groupname, is.count=FALSE,
 #' @param outcomename Name of column that has the outcome to calculated adjusted
 #'   values for.
 #' @param groupname Name of categorical covariate that determines the groups.
-#' @param include.aggregate Include aggregated (unadjusted) totals in the output
+#' @param include_aggregate Include aggregated (unadjusted) totals in the output
 #'   as well.
 #' @param dat  Dataframe of data.  Requires an N column of total cases
 #'   represented in each row.
 #' @param pi.star The target weights.  Each month will have its groups
 #'   re-weighted to match these target weights.
-#' @param is.count Indicator of whether outcome is count data or a continuous
+#' @param is_count Indicator of whether outcome is count data or a continuous
 #'   measure (this impacts how aggregation is done).
 #' @param covariates Covariates to be passed to aggregation (list of string
 #'   variable names).
 #' @export
-adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
-                        include.aggregate = FALSE,
+adjust_data = function( dat, outcomename, groupname, pi.star, is_count=FALSE,
+                        include_aggregate = FALSE,
                         covariates = NULL ) {
 
     # add the target subgroup weights to the dataframe
     adat = merge( dat, pi.star[ c( groupname, "pi.star" ) ], by=groupname, all.x = TRUE )
 
-    if ( is.count ) {
+    if ( is_count ) {
         adat[outcomename] = adat[[outcomename]] / adat[["N"]]
     }
 
@@ -137,7 +137,7 @@ adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
                    .Y.adj = sum( pi.star * !!rlang::sym( outcomename ) ),
                    N = sum( N ) )
 
-    if ( is.count ) {
+    if ( is_count ) {
         adj.dat = mutate( adj.dat, #.Y = .Y * N,
                           .Y.adj = .Y.adj * N )
     }
@@ -147,8 +147,8 @@ adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
   #  adj.dat[ outcomename ] = adj.dat$.Y
     adj.dat$.Y.adj = adj.dat$.Y = NULL
 
-    if ( include.aggregate ) {
-        sdat = aggregate_data( dat, outcomename, groupname, is.count, covariates = covariates )
+    if ( include_aggregate ) {
+        sdat = aggregate_data( dat, outcomename, groupname, is_count, covariates = covariates )
         adj.dat = merge( adj.dat, sdat, by=c("N","month"), all=TRUE )
     }
 
@@ -166,22 +166,22 @@ adjust.data = function( dat, outcomename, groupname, pi.star, is.count=FALSE,
 #' This code makes synthetic grouped data that can be used to illustrate
 #' benefits of post stratification.
 #'
-#' @param t.min Index of first month
-#' @param t.max Index of last month
+#' @param t_min Index of first month
+#' @param t_max Index of last month
 #' @param t0 last pre-policy timepoint
 #' @param method Type of post-stratification structure to generate.
 #' @export
-make.fake.group.data = function( t.min, t0, t.max, method=c("complex","linear","jersey") ) {
-    stopifnot( t.min < t0 )
-    stopifnot( t.max > t0 )
-    t = t.min:t.max
+make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","jersey") ) {
+    stopifnot( t_min < t0 )
+    stopifnot( t_max > t0 )
+    t = t_min:t_max
 
     method = match.arg(method)
 
     # number of cases of each type (not impacted by policy)
     # Drug is steadily declining.  violent is slowly increasing.
-    N.drug = round( (200-800)*(t - t.min)/(t.max-t.min) + 800 )
-    N.violent = round( (300-100)*(t - t.min)/(t.max-t.min) + 100 )
+    N.drug = round( (200-800)*(t - t_min)/(t_max-t_min) + 800 )
+    N.violent = round( (300-100)*(t - t_min)/(t_max-t_min) + 100 )
     
     if ( method == "complex" ) {
       # Add a seasonality component
@@ -277,19 +277,19 @@ make.fake.group.data = function( t.min, t0, t.max, method=c("complex","linear","
 
 if ( FALSE ) {
     # fake, illustration data -- specifying the range of months
-    t.min = -12*6.5
+    t_min = -12*6.5
     t0 = 0
-    t.max = 18
+    t_max = 18
 
-    dat = make.fake.group.data( t.min, t0, t.max, method = "jersey" )
+    dat = make_fake_group_data( t_min, t0, t_max, method = "jersey" )
     head( dat )
 
     ss = aggregate_data( dat, "prop", "type", rich=TRUE )
     head( ss )
     plot( ss$pi.drug )
     
-    sdat = aggregate_data( dat, "prop", "type", is.count=FALSE, rich = FALSE )
-    sdat2 = aggregate_data( dat, "Y", "type", is.count=TRUE, rich= FALSE )
+    sdat = aggregate_data( dat, "prop", "type", is_count=FALSE, rich = FALSE )
+    sdat2 = aggregate_data( dat, "Y", "type", is_count=TRUE, rich= FALSE )
     sdat = merge( sdat, sdat2, by=c("month","N") )
     head( sdat )
     sdat$type = "all"
@@ -315,16 +315,16 @@ if ( FALSE ) {
     head( dat )
 
     # Calculate how to weight the groups
-    pis = calculate.group.weights( "type", dat, t0, max(dat$month) )
+    pis = calculate_group_weights( "type", dat, t0, max(dat$month) )
     pis
 
 
 
     # looking at rates
     head( dat )
-    sdat = aggregate_data( dat, "prop", "type", is.count=FALSE )
+    sdat = aggregate_data( dat, "prop", "type", is_count=FALSE )
 
-    adjdat = adjust.data( dat, "prop", "type", pis )
+    adjdat = adjust_data( dat, "prop", "type", pis )
     head( adjdat )
     adjdat = merge( adjdat, sdat, by=c("N","month"), all=TRUE )
     head( adjdat )
@@ -346,10 +346,10 @@ if ( FALSE ) {
 
 
     # Looking at counts
-    sdat = aggregate_data( dat, "Y", "type", is.count=TRUE )
+    sdat = aggregate_data( dat, "Y", "type", is_count=TRUE )
     head( sdat )
 
-    adjdat = adjust.data( dat, "Y", "type", pis, is.count = TRUE )
+    adjdat = adjust_data( dat, "Y", "type", pis, is_count = TRUE )
     head( adjdat )
     d2 = gather( adjdat, Y.adj, Y, starts_with( "type." ), key="outcome", value="Y" )
     head( d2 )
@@ -368,33 +368,33 @@ if ( FALSE ) {
 if ( FALSE ) {
 
     # fake, illustration data -- specifying the range of months
-    t.min = -12*6.5
+    t_min = -12*6.5
     t0 = 0
-    t.max = 18
+    t_max = 18
 
-    dat = make.fake.group.data( t.min, t0, t.max )
+    dat = make_fake_group_data( t_min, t0, t_max )
     head( dat )
 
-    pis = calculate.group.weights( "type", dat, t0, max(dat$month) )
+    pis = calculate_group_weights( "type", dat, t0, max(dat$month) )
     pis
 
 
     ##
     ## The proportion as outcome
     ##
-    adjdat = adjust.data( dat, "prop", "type", pis, include.aggregate=TRUE )
+    adjdat = adjust_data( dat, "prop", "type", pis, include_aggregate=TRUE )
     head( adjdat )
 
-    adjdat = add.lagged.covariates(adjdat, "prop.adj", c("A","B") )
+    adjdat = add_lagged_covariates(adjdat, "prop.adj", c("A","B") )
     head( adjdat )
 
     # Modeling adjusted and not
-    envelope.adj = process.outcome.model( "prop.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.adj = process_outcome_model( "prop.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    envelope = process.outcome.model( "prop", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope = process_outcome_model( "prop", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    envelope.drug = process.outcome.model( "prop.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
-    envelope.violent = process.outcome.model( "prop.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.drug = process_outcome_model( "prop.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.violent = process_outcome_model( "prop.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
     env = bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
     head( env )
@@ -413,21 +413,21 @@ if ( FALSE ) {
     ##
     ## And with Y (counts)
     ##
-    adjdat = adjust.data( dat, "Y", "type", pis, include.aggregate=TRUE, is.count = TRUE )
+    adjdat = adjust_data( dat, "Y", "type", pis, include_aggregate=TRUE, is_count = TRUE )
     head( adjdat )
 
     qplot( Y, Y.adj, data=adjdat )
 
-    adjdat = add.lagged.covariates(adjdat, "Y.adj", c("A","B") )
+    adjdat = add_lagged_covariates(adjdat, "Y.adj", c("A","B") )
     head( adjdat )
 
     # Modeling adjusted and not
-    envelope.adj = process.outcome.model( "Y.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.adj = process_outcome_model( "Y.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    envelope = process.outcome.model( "Y", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope = process_outcome_model( "Y", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    envelope.drug = process.outcome.model( "Y.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
-    envelope.violent = process.outcome.model( "Y.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.drug = process_outcome_model( "Y.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+    envelope.violent = process_outcome_model( "Y.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
     env = bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
     head( env )

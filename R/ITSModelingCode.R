@@ -13,7 +13,7 @@ SMOOTH_K = 11
 #' @param lagless Boolean, include the lagged outcome, or not?
 #' @param ... Extra arguments passed to the lm() call.
 #' @export
-fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
+fit_model.default = function( dat, outcomename, lagless = FALSE, ... ) {
   monthname = "month"
 
   if ( lagless ) {
@@ -22,11 +22,11 @@ fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
     form = paste0( outcomename, " ~ ", monthname, " + lag.outcome" )
   }
 
-  M0 = lm( as.formula( form ), data=dat[-c(1),], ... )
+  M0 = lm( stats::as.formula( form ), data=dat[-c(1),], ... )
   M0
 }
 
-#' Make a fit.model that takes a seasonality component
+#' Make a fit_model that takes a seasonality component
 #'
 #' This method returns a function that will fit a model both with and without
 #' lagged outcomes.
@@ -40,9 +40,9 @@ fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
 #' @param no.lag Formula specifying additional variables to not lag (usually used due
 #'   to colinearity of lagged outcomes, such as with a sin and cos component).
 #' @return A function that takes dat, outcomename, and a lagless flag (see,
-#'   e.g., fit.model.default)
+#'   e.g., fit_model.default)
 #' @export
-make.fit.season.model = function( formula, no.lag = NULL ) {
+make_fit_season_model = function( formula, no.lag = NULL ) {
 
   stopifnot( attr( terms( formula ), "response" ) == 0 )
 
@@ -74,7 +74,7 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
     } else {
       the.formula = lag.form
     }
-    the.formula = update( the.formula, as.formula( paste0( outcomename, " ~ 1 + month + ." ) ) )
+    the.formula = update( the.formula, stats::as.formula( paste0( outcomename, " ~ 1 + month + ." ) ) )
 
     M0 = lm( the.formula, data=dat[-c(1), ], ...)
     M0
@@ -98,7 +98,7 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
 #' This is so we can show trendlines and so forth on plots.
 #'
 #' Ybar is defined for both pre and post policy datapoints.
-#' @param fit.model A function that takes data, fits a linear model, and returns
+#' @param fit_model A function that takes data, fits a linear model, and returns
 #'   the fit model. This function needs an option to include (or not) lagged
 #'   covariates.
 #' @param outcomename String name of the outcome variable in dat.
@@ -106,7 +106,7 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
 #' @param dat Dataframe of the data.
 #' @return Predicted sequence for passed dataframe (as vector)
 #' @export
-generate.Ybars = function( fit.model, outcomename, t0, dat ) {
+generate_Ybars = function( fit_model, outcomename, t0, dat ) {
 
   # refit model with no lags
   #fm = formula( fit0 )
@@ -115,7 +115,7 @@ generate.Ybars = function( fit.model, outcomename, t0, dat ) {
   #fmup = paste0( "~ . - ", paste( lgs, collapse =" - " ), collapse="" )
 
   #fit0.lagless = update( fit0, fmup, data=dat )
-  M0.lagless = fit.model( filter( dat, month <= t0 ), outcomename, lagless=TRUE )
+  M0.lagless = fit_model( dplyr::filter( dat, month <= t0 ), outcomename, lagless=TRUE )
 
   predict( M0.lagless, newdata = dat )
 }
@@ -133,11 +133,11 @@ generate.Ybars = function( fit.model, outcomename, t0, dat ) {
 #'
 #'    $$Y = Ybar + beta1 * Y.pre + residual$$
 #'
-#' where Ybar is our structural model (with lagged OUTCOME, not lagged residual, so the generate.Ybars
+#' where Ybar is our structural model (with lagged OUTCOME, not lagged residual, so the generate_Ybars
 #' method will not give the correct values here).
 #
 #' @param Ybar Structural (expected) sequence.  This method adds the autoregressive residual component
-#'       to this.  Ybar tends to come from generate.structure.sequence()
+#'       to this.  Ybar tends to come from generate_structure_sequence()
 #' @param Y.init Value of series at time point just before first time point in dat.post
 #' @param beta1 Coefficient for lagged outcome
 #' @param sigma Standard deviation of the residual errors to add to each step
@@ -145,7 +145,7 @@ generate.Ybars = function( fit.model, outcomename, t0, dat ) {
 #' @param include.start If TRUE, return Y.init as the initial element in the returned sequence.
 #'
 #' @return Vector of the synthetic outcomes.
-make.autoregressive.series = function( Ybar, Y.init, beta1, sigma,
+make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
                                        expected=FALSE, include.start = FALSE ) {
     if ( expected ) {
       Ys = c( Y.init, rep( 0, length(Ybar) ) )
@@ -166,14 +166,14 @@ make.autoregressive.series = function( Ybar, Y.init, beta1, sigma,
 
 
 #' Generate the predictions of fit0 excluding the lagged outcome variable. This
-#' is a utility function used by the make.autoregressive.series() method.
+#' is a utility function used by the make_autoregressive_series() method.
 #'
 #' We do this so we can subtract this part off before smoothing so our smoother
 #' doesn't have to try and capture the seasonality stuff.
 #' @param fit0 Model fit to data.
 #' @param dat Data to predict outcomes for using fit0.
 #' @return Predictions as a numeric vector.
-generate.structure.sequence = function( fit0, dat ) {
+generate_structure_sequence = function( fit0, dat ) {
   dat$lag.outcome = 0
   predict( fit0, newdata=dat )
 }
@@ -195,25 +195,25 @@ generate.structure.sequence = function( fit0, dat ) {
 #'   of the pre-policy series followed by the synthetic sequence.
 #'
 #' @export
-generate.prediction.sequence = function( beta.vec, sigma,
+generate_prediction_sequence = function( beta.vec, sigma,
                                          dat, fit0, outcomename, t0 ) {
     fit0$coefficients = beta.vec
     beta1 = coef( fit0 )[[ "lag.outcome" ]]
 
     # Predict what we would see, setting lagged outcome to 0 (to set up simulation).
-    dat$Ybar.core = generate.structure.sequence( fit0, dat=dat )
+    dat$Ybar.core = generate_structure_sequence( fit0, dat=dat )
 
     # Calculate what the parameters would suggest we would see in expectation, conditional on the first
     # observed timepoint.
-    dat$Ybar = make.autoregressive.series( dat$Ybar.core[-c(1)], dat[[outcomename]][1], beta1=beta1, sigma=sigma,
+    dat$Ybar = make_autoregressive_series( dat$Ybar.core[-c(1)], dat[[outcomename]][1], beta1=beta1, sigma=sigma,
                                            expected = TRUE,
                                            include.start = TRUE)
 
-    dat.post = filter( dat, month > t0 )
-    dat.pre = filter( dat, month <= t0 )
+    dat.post = dplyr::filter( dat, month > t0 )
+    dat.pre = dplyr::filter( dat, month <= t0 )
     dat.thresh = dat.pre[ nrow( dat.pre ), ]
 
-    dat.post$Ystar = make.autoregressive.series( dat.post$Ybar.core,
+    dat.post$Ystar = make_autoregressive_series( dat.post$Ybar.core,
                                                  Y.init=dat.thresh[[outcomename]], beta1=beta1, sigma=sigma )
 
     # For prepolicy data, keep our structural predictions, but
@@ -234,7 +234,7 @@ generate.prediction.sequence = function( beta.vec, sigma,
 #' series).
 #'
 #' This method takes several parameters it does not use, to maintain
-#' compatability with smooth.residuals.
+#' compatability with smooth_residuals.
 #'
 #' @param res A dataframe with a month column and an 'outcomename' column (which
 #'   is the column that will be smoothed).
@@ -253,22 +253,25 @@ generate.prediction.sequence = function( beta.vec, sigma,
 #'   the original sequence to be smoothed.
 #'
 #' @export
-smooth.series = function( res, outcomename, t0,
+#' @importFrom rlang .data
+#' @importFrom dplyr mutate
+#' @importFrom stats formula
+smooth_series = function( res, outcomename, t0,
                           smooth_k = SMOOTH_K,
                           post.only = TRUE,
                           ... ) {
 
   if ( post.only ) {
-    res.dat = filter( res, month > t0 )
+    res.dat = dplyr::filter( res, .data$month > t0 )
   } else {
     res.dat = res
   }
 
   form = paste0( outcomename, " ~ month" )
-  mod = loess( formula( form ), data=res.dat, span=smooth_k / nrow(res.dat) )
+  mod = stats::loess( formula( form ), data=res.dat, span=smooth_k / nrow(res.dat) )
 
   res = mutate( res,
-                Ysmooth = predict( mod, newdata=res ) )
+                Ysmooth = stats::predict( mod, newdata=res ) )
 
   # Unneeded, loess won't extrapolate
   #if ( post.only ) {
@@ -293,13 +296,13 @@ smooth.series = function( res, outcomename, t0,
 #'
 #' @param res A dataframe with a month column and 'outcomename' column, which is
 #'   the column to be smoothed.
-#' @param fit.model A function that takes data, fits a linear model, and returns
+#' @param fit_model A function that takes data, fits a linear model, and returns
 #'   the fit model. This function needs an option to include (or not) lagged
 #'   covariates.
 #' @param outcomename String name of the outcome variable in dat.
 #' @param t0 last pre-policy timepoint
 #' @param covariates A dataframe with all covariates needed in the model fitting
-#'   defined by fit.model.
+#'   defined by fit_model.
 #' @param smooth_k A rough proxy for the number of observations to primarily
 #'   consider to kernal weight in the neighborhood of each timepoint (this is a
 #'   bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
@@ -316,10 +319,12 @@ smooth.series = function( res, outcomename, t0,
 #' @param outcomename The name of the column in dat which is our outcome.
 #'
 #' @export
-smooth.residuals = function( res, t0, outcomename,
+#' @importFrom rlang .data
+#' @importFrom dplyr mutate filter
+smooth_residuals = function( res, t0, outcomename,
                              post.only = TRUE,
                              smooth_k = SMOOTH_K,
-                             fit.model = fit.model.default,
+                             fit_model = fit_model.default,
                              covariates,
                              full.output = FALSE ) {
     stopifnot( nrow( res ) == nrow( covariates ) )
@@ -327,25 +332,26 @@ smooth.residuals = function( res, t0, outcomename,
     covariates$Y = res[[outcomename]]
 
     if ( post.only ) {
-      res.dat = filter( covariates, month > t0 )
+      res.dat = dplyr::filter( covariates, .data$month > t0 )
     } else {
       res.dat = covariates
     }
 
-    fit0star = fit.model( res.dat, "Y", lagless=TRUE )
+    fit0star = fit_model( res.dat, "Y", lagless=TRUE )
 
-    covariates$Ybar.sm = predict( fit0star, newdata=covariates )
+    covariates$Ybar.sm = stats::predict( fit0star, newdata=covariates )
 
-    covariates = mutate( covariates, resid = Y - Ybar.sm )
+    covariates = mutate( covariates, resid = .data$Y - .data$Ybar.sm )
 
-    covariates$residStar = smooth.series( covariates, "resid", t0, smooth_k=smooth_k, post.only=post.only )
+    covariates$residStar = smooth_series( covariates, "resid", t0, 
+                                          smooth_k=smooth_k, post.only=post.only )
 
     covariates = mutate( covariates,
-                         Ysmooth = Ybar.sm + residStar )
+                         Ysmooth = .data$Ybar.sm + .data$residStar )
 
     # Give back columns of interest (for debugging)
     if ( full.output ) {
-      dplyr::select( covariates, month, resid, residStar, Ybar.sm, Y, Ysmooth )
+      dplyr::select( covariates, .data$month, .data$resid, .data$residStar, .data$Ybar.sm, .data$Y, .data$Ysmooth )
     } else {
       covariates$Ysmooth
     }
@@ -357,25 +363,25 @@ smooth.residuals = function( res, t0, outcomename,
 #'
 #' This helper function gives back a function that takes the resulting
 #' simulation data from a single iteration of the simulation, and fits
-#' 'fit.model' to it, smoothes the residuals, and puts the predictions from
-#' 'fit.model' back.
+#' 'fit_model' to it, smoothes the residuals, and puts the predictions from
+#' 'fit_model' back.
 #'
 #' This can be used to build smoothers that smooth using models other than the
 #' model being used for extrapolation (e.g., a model without temperature).
 #'
-#' @inheritParams smooth.residuals
+#' @inheritParams smooth_residuals
 #' 
 #' @return a smoother function that can be passed to the smoothing routines.
 #'
 #' @export
-make.model.smoother = function( fit.model, covariates ) {
+make_model_smoother = function( fit_model, covariates ) {
 
   f = function( res, t0, outcomename, post.only = TRUE, smooth_k = SMOOTH_K ) {
-    smooth.residuals( res=res, t0=t0, 
+    smooth_residuals( res=res, t0=t0, 
                       outcomename=outcomename, 
                       post.only=post.only, 
                       smooth_k=smooth_k,
-                      fit.model=fit.model, 
+                      fit_model=fit_model, 
                       covariates=covariates )
   }
 
@@ -411,7 +417,7 @@ make.model.smoother = function( fit.model, covariates ) {
 #'
 #' @return data.frame with the collection of predicted series
 #' @export
-make.many.predictions = function( fit0, dat, R, outcomename, t0 ) {
+make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
     # Generate collection of plausible beta values and sigma values we
     # will use for our predictions
@@ -446,7 +452,7 @@ make.many.predictions = function( fit0, dat, R, outcomename, t0 ) {
 
 
     # For each plausible coefficient vector, generate a predictive series.
-    res = map2_dfr( coefs, sigmas, generate.prediction.sequence, .id="Run",
+    res = map2_dfr( coefs, sigmas, generate_prediction_sequence, .id="Run",
                     dat=dat, fit0 = fit0, outcomename=outcomename, t0=t0 )
 
     res
@@ -463,13 +469,13 @@ make.many.predictions = function( fit0, dat, R, outcomename, t0 ) {
 #'
 #' WARNING: This will not capture true uncertainty as it is not taking parameter uncertainty into account.
 #'
-#' @inheritParams make.many.predictions
+#' @inheritParams make_many_predictions
 #' @return data.frame with the collection of predicted series
 #' @export
-make.many.predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
+make_many_predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 
   # Repeatidly generate a predictive series.
-  res = plyr::rdply( R, generate.prediction.sequence( coef( fit0 ), sigma( fit0 ),
+  res = plyr::rdply( R, generate_prediction_sequence( coef( fit0 ), sigma( fit0 ),
                                                       dat=dat, fit0 = fit0, outcomename=outcomename, t0=t0 ),
                      .id = "Run" )
 
@@ -485,11 +491,11 @@ make.many.predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 #' @param covariates The covariates to lag (list of string names).  NULL if no
 #'   covariates other than outcome should be lagged.  covariates can also be a
 #'   function with a "lags" attribute with the listed covariates (as returned
-#'   by, e.g., make.fit.season.model)
+#'   by, e.g., make_fit_season_model)
 #'
 #' @return Augmented dataframe
 #' @export
-add.lagged.covariates = function( dat,
+add_lagged_covariates = function( dat,
                                   outcomename,
                                   covariates = NULL ) {
   if ( !( outcomename %in% names(dat) ) ) {
@@ -526,11 +532,11 @@ add.lagged.covariates = function( dat,
 #' @return Single number (in this case mean of given months)
 #' @examples 
 #' data( mecklenberg )
-#' calculate.average.outcome( mecklenberg, "pbail", months=1:24 )
-#' @rdname calculate.average.outcome
+#' calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
+#' @rdname calculate_average_outcome
 #' @export
 #'
-calculate.average.outcome = function( res, outcomename,
+calculate_average_outcome = function( res, outcomename,
                                       months = 1:54,
                                       ... ) {
 
@@ -546,10 +552,10 @@ calculate.average.outcome = function( res, outcomename,
 #'   compares to the observed.
 #'
 #' @param orig.data The raw data (dataframe)
-#' @param predictions The results from process.outcome.model.
+#' @param predictions The results from process_outcome_model.
 #' @param outcomename Outcome to use.
 #' @param summarizer A function to calculate some summary quantity, Default:
-#'   calculate.average.outcome
+#'   calculate_average_outcome
 #' @param ... Extra arguments passed to the summarizer function.
 #' 
 #' @return List of the test statistic and reference distribution.
@@ -557,7 +563,7 @@ calculate.average.outcome = function( res, outcomename,
 #' @export
 aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
-                                         summarizer = calculate.average.outcome, ... ) {
+                                         summarizer = calculate_average_outcome, ... ) {
   summary = predictions %>%
     nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
     mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
@@ -587,7 +593,7 @@ aggregate_simulation_results = function( orig.data, predictions,
 #'   look at distribution of smoothed trajectories.  FALSE means look at raw
 #'   data treajectories.
 #' @param smoother  Function to do smoothing, if smoothing set to TRUE.  Default
-#'   is smooth.series()
+#'   is smooth_series()
 #' @param fix.params Keep the parameters in the model M0 as fixed; do not add
 #'   parameter uncertainty.
 #' @param ... Extra arguments to be passed to smoother (e.g, bandwidth).
@@ -597,14 +603,14 @@ aggregate_simulation_results = function( orig.data, predictions,
 #'   summarize=TRUE, one row per month in original data.  If FALSE, all the
 #'   details of all the runs are returned.
 #' @export
-extrapolate.model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
-                              smoother = smooth.series, full.output = FALSE,fix.params = FALSE, ...) {
+extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
+                              smoother = smooth_series, full.output = FALSE,fix.params = FALSE, ...) {
   require( tidyverse )
 
   if ( fix.params ) {
-    predictions = make.many.predictions.plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
+    predictions = make_many_predictions.plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
   } else {
-    predictions = make.many.predictions( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
+    predictions = make_many_predictions( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
   }
 
   # If we are smoothing, smooth all the simulation trajectories
@@ -674,7 +680,7 @@ drop.extra.covariates = function( M0, data  ) {
 
     warning( paste0( "Dropped covariates due to colinearity with update of: ~ . - ", nas ) )
 
-    update( M0, formula. = as.formula( paste( "~ . ", nas, sep= "-"  ) ), data=data )
+    update( M0, formula. = stats::as.formula( paste( "~ . ", nas, sep= "-"  ) ), data=data )
   } else {
     # No need to take action
     M0
@@ -696,10 +702,10 @@ drop.extra.covariates = function( M0, data  ) {
 #' @param summarize Summarise the series
 #' @param smooth Smooth the series
 #' @param smoother Function to smooth residuals.  If NULL, will dynamically make
-#'   a model smoother based on the fit.model method.
-#' @param fit.model The function used to fit the model to simulate from.
+#'   a model smoother based on the fit_model method.
+#' @param fit_model The function used to fit the model to simulate from.
 #' @param covariates Vector of covariate names used in the model function
-#'   fit.model.
+#'   fit_model.
 #' @param plug.in Use the estimated parameters as fixed and do not include that
 #'   extra uncertainty in the simulation.
 #' @param ... Extra arguments to be passed to other function.
@@ -712,40 +718,40 @@ drop.extra.covariates = function( M0, data  ) {
 #'   `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
 #'   outcome given the model with no autoregressive aspect.
 #' @export
-process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
+process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
                                   smooth=FALSE, smoother = NULL,
-                                  fit.model = fit.model.default,
+                                  fit_model = fit_model.default,
                                   covariates = NULL,
                                   plug.in = FALSE, ... ) {
 
     if ( is.null( covariates ) ) {
-      covariates = attr( fit.model, "lags" )
+      covariates = attr( fit_model, "lags" )
     }
 
-    dat = add.lagged.covariates( dat, outcomename, covariates = covariates  )
+    dat = add_lagged_covariates( dat, outcomename, covariates = covariates  )
 
     # the dat[-c(1), ] is to drop the first observation due to the lagging issue
     #dat=dat[-c(1),]
 
-    dat.pre = filter( dat, month <= t0 )
+    dat.pre = dplyr::filter( dat, month <= t0 )
 
-    M0 = fit.model( dat.pre, outcomename )
+    M0 = fit_model( dat.pre, outcomename )
 
     if ( any( is.na( coef( M0 ) ) ) ) {
         M0 = drop.extra.covariates( M0, dat.pre[-c(1),] )
     }
 
-    # Generate the smoother function to pass to extrapolate.model
+    # Generate the smoother function to pass to extrapolate_model
     if ( smooth && is.null( smoother ) ) {
       M0full = model.frame( M0, data=dat, na.action=NULL )
-      smoother = make.model.smoother( covariates=M0full, fit.model = fit.model )
+      smoother = make_model_smoother( covariates=M0full, fit_model = fit_model )
     }
 
-    res = extrapolate.model( M0, outcomename, dat, t0, R, summarize=summarize, smooth=smooth,
+    res = extrapolate_model( M0, outcomename, dat, t0, R, summarize=summarize, smooth=smooth,
                        smoother=smoother, fix.params = plug.in )
 
     if ( summarize ) {
-      res$Ybar = generate.Ybars( fit.model, outcomename, t0, dat )
+      res$Ybar = generate_Ybars( fit_model, outcomename, t0, dat )
     }
 
     res
@@ -756,7 +762,7 @@ process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
 
 #' Make envelope style graph with associated smoothed trendlines
 #'
-#' @param envelope The result of a process.outcome.model call, i.e. dataframe
+#' @param envelope The result of a process_outcome_model call, i.e. dataframe
 #'   with columns of original data, imputed data and, potentially, smoothed
 #'   data.
 #' @param t0  Last pre-policy timepoint.
@@ -764,14 +770,14 @@ process.outcome.model = function( outcomename, dat, t0, R=400, summarize=FALSE,
 #' @param xlab X label of plot
 #'
 #' @export
-make.envelope.graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
+make_envelope_graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
 
   has.smooth = ( "Ysmooth" %in% names(envelope) ) && (any( !is.na( envelope$Ysmooth ) ) )
 
     # get last pre-policy timepoint
-    Y.init = filter( envelope, month == t0 )$Y
+    Y.init = dplyr::filter( envelope, month == t0 )$Y
 
-    #ft = filter( envelope, month == t0+1 )
+    #ft = dplyr::filter( envelope, month == t0+1 )
     #ft$month = ft$month - 0.5
     #ft$Ysmooth = ft$Ysmooth1 = ft$Y = NA
     #envelope = bind_rows( envelope, ft )
@@ -789,7 +795,7 @@ make.envelope.graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
       plt = plt + geom_line( aes( y=Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
         geom_line( aes( y=Ysmooth1 ), color = "red", na.rm=TRUE )
     } else {
-      plt = plt + geom_line( data=filter( envelope, month >= t0 ), aes( y=Ystar ) )
+      plt = plt + geom_line( data=dplyr::filter( envelope, month >= t0 ), aes( y=Ystar ) )
     }
 
     plt

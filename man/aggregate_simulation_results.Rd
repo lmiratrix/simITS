@@ -8,19 +8,19 @@ aggregate_simulation_results(
   orig.data,
   predictions,
   outcomename,
-  summarizer = calculate.average.outcome,
+  summarizer = calculate_average_outcome,
   ...
 )
 }
 \arguments{
 \item{orig.data}{The raw data (dataframe)}
 
-\item{predictions}{The results from process.outcome.model.}
+\item{predictions}{The results from process_outcome_model.}
 
 \item{outcomename}{Outcome to use.}
 
 \item{summarizer}{A function to calculate some summary quantity, Default:
-calculate.average.outcome}
+calculate_average_outcome}
 
 \item{...}{Extra arguments passed to the summarizer function.}
 }

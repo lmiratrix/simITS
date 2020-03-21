@@ -38,18 +38,18 @@ ggplot( meck, aes( x=month, y=pbail)) +
 
 We can add lagged covariates and fit our simple ITS model as so:
 ```{r}
-    meck = add.lagged.covariates( meck, outcomename = "pbail", covariates=NULL )
+    meck = add_lagged_covariates( meck, outcomename = "pbail", covariates=NULL )
     head( meck )
     tail( meck )
     
     meck.pre = filter( meck, month <= 0 )    
-    mod = fit.model.default( meck.pre, "pbail" )
+    mod = fit_model.default( meck.pre, "pbail" )
     summary( mod )
 ```
 
 ```{r}
   t0 = 0
-    envelope = process.outcome.model( "pbail", meck, 
+    envelope = process_outcome_model( "pbail", meck, 
                                       t0=t0, R = 100, 
                                       summarize = TRUE, smooth=FALSE )
     head( envelope )
@@ -71,7 +71,7 @@ For simulation we also offer a fake data generator.  It works like this:
 ```{r}
   library( simITS )
 
-    dat = make.fake.data( t.min=-60, t.max=18, t0 = 0 )
+    dat = make_fake_data( t_min=-60, t_max=18, t0 = 0 )
     head( dat )
     qplot( month, Ystr, data=dat, geom = c( "point","line") )
     qplot( month, Y, data=dat, geom = c( "point","line") )
@@ -82,12 +82,12 @@ For simulation we also offer a fake data generator.  It works like this:
 We can then process it.  Here we demonstrate summarizing and smoothing:   
 ```{r}
 
-    #debugonce( process.outcome.model )
-    envelope = process.outcome.model( "Y", dat, t0=t0, R = 100, summarize = TRUE, smooth=TRUE )
+    #debugonce( process_outcome_model )
+    envelope = process_outcome_model( "Y", dat, t0=t0, R = 100, summarize = TRUE, smooth=TRUE )
     head( envelope )
     tail( envelope )
 
-    make.envelope.graph(envelope, t0 )
+    make_envelope_graph(envelope, t0 )
 
     ggplot( dat, aes( month ) ) +
         geom_line( aes( y=Y ), alpha = 0.6 ) +
@@ -102,22 +102,22 @@ We can then process it.  Here we demonstrate summarizing and smoothing:
 
 # Seasonality and covariates
 
-A seasonality model on some fake data with a strong seasonality component is easy to fit.  You just construct some code to fit the seasonality model via the `make.fit.season.model()` factory (you need to have the covariates pre-constructed in your data):
+A seasonality model on some fake data with a strong seasonality component is easy to fit.  You just construct some code to fit the seasonality model via the `make_fit_season_model()` factory (you need to have the covariates pre-constructed in your data):
 ```{r}
 data( newjersey )
 head( newjersey )
-fit.season.model.qtemp =  make.fit.season.model( ~ temperature + Q2 + Q3 + Q4 )
+fit.season.model.qtemp =  make_fit_season_model( ~ temperature + Q2 + Q3 + Q4 )
 
-envelope = process.outcome.model( "n.warrant", newjersey, t0=-7, R = 100, 
+envelope = process_outcome_model( "n.warrant", newjersey, t0=-7, R = 100, 
                                   summarize = TRUE, smooth=TRUE, 
-                                  fit.model = fit.season.model.qtemp )
+                                  fit_model = fit.season.model.qtemp )
 head( envelope )
 tail( envelope )
 
-make.envelope.graph( envelope, t0=-7 )
+make_envelope_graph( envelope, t0=-7 )
 ```
 
-Note how it will construct the lagged covariates automatically. The `make.fit.season.model()` method records what covariates are needed from the passed formula.
+Note how it will construct the lagged covariates automatically. The `make_fit_season_model()` method records what covariates are needed from the passed formula.
 
 
 
