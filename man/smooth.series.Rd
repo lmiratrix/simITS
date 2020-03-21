@@ -10,11 +10,19 @@ smooth.series(res, outcomename, t0, smooth_k = SMOOTH_K, post.only = TRUE, ...)
 \item{res}{A dataframe with a month column and an 'outcomename' column (which
 is the column that will be smoothed).}
 
+\item{outcomename}{String name of the outcome variable in dat.}
+
+\item{t0}{last pre-policy timepoint}
+
 \item{smooth_k}{A rough proxy for the number of observations to primarily
 consider to kernal weight in the neighborhood of each timepoint (this is a
 bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 want to smooth with an absolute bandwidth, not one as function of how long
 the time series is.}
+
+\item{post.only}{Boolean of smooth post-policy data only, or full sequence.}
+
+\item{...}{Extra arguments (not used in this function).}
 }
 \value{
 An updated version of the 'res' dataframe with `Ysmooth`, the

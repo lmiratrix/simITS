@@ -6,16 +6,17 @@
 \title{New Jersey PSA Reform aggregate data}
 \format{A data frame with 106 rows and 11 variables:
 \describe{
-  \item{\code{tsin1}}{double COLUMN_DESCRIPTION}
-  \item{\code{tcos1}}{double COLUMN_DESCRIPTION}
-  \item{\code{M12}}{integer COLUMN_DESCRIPTION}
-  \item{\code{Q1}}{integer COLUMN_DESCRIPTION}
-  \item{\code{Q2}}{integer COLUMN_DESCRIPTION}
-  \item{\code{Q3}}{integer COLUMN_DESCRIPTION}
-  \item{\code{Q4}}{integer COLUMN_DESCRIPTION}
-  \item{\code{compwarr.cs}}{double Number of warrant arrests}
-  \item{\code{compsumm.cs}}{double Number of summons arrests}
-  \item{\code{comptot.cs}}{double Total number of arrests}
+  \item{\code{month}}{integer Index of month.}
+  \item{\code{sin.m}}{double cos of month number}
+  \item{\code{cos.m}}{double sin of month number}
+  \item{\code{M12}}{integer Month number}
+  \item{\code{Q1}}{integer Indicator of 1st quarter.}
+  \item{\code{Q2}}{integer Indicator of 2nd quarter.}
+  \item{\code{Q3}}{integer Indicator of 3rd quarter.}
+  \item{\code{Q4}}{integer Indicator of 4th quarter.}
+  \item{\code{n.warrant}}{double Number of warrant arrests}
+  \item{\code{n.summons}}{double Number of summons arrests}
+  \item{\code{n}}{double Total number of arrests}
   \item{\code{temperature}}{double Average temperature in New Jersey that month.}
 }}
 \usage{

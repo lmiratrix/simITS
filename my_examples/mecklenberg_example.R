@@ -386,6 +386,7 @@ sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
 
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs
+sstat$t.obs - quantile( sstat$t, c( 0.025, 0.975 ))
 
 # Look at different range of post-policy months (6 months to 12 months out)
 # changes impact estimate.
@@ -394,6 +395,7 @@ sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
 
 quantile( sstat$t, c( 0.025, 0.975 ))
 sstat$t.obs
+sstat$t.obs - quantile( sstat$t, c( 0.025, 0.975 ))
 
 
 

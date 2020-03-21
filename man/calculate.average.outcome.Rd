@@ -23,5 +23,5 @@ Given a set of simulation runs, estimate average impact over range of months
 }
 \examples{
 data( mecklenberg )
-calculate.average.outcome( mecklenberg, "pbail" )
+calculate.average.outcome( mecklenberg, "pbail", months=1:24 )
 }

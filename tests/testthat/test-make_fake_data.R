@@ -7,6 +7,8 @@ test_that("default", {
   			coef.q = c(1, 0, -1, 0), coef.temp = 0.1, coef.sin = c(0, 0), coef.tx = c(0, 0.25, 5))
   expect_equal(simData[3:7], simData2[3:7])
 })
+
+
 test_that("negative", {
   #negative test for parameters
   expect_error(make.fake.data(tmin = "minTemp"))

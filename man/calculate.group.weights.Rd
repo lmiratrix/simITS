@@ -19,6 +19,8 @@ a 'month' column for the time.}
 \item{t.min}{The start month to aggregate cases over.}
 
 \item{t.max}{The final month (default is last month).}
+
+\item{N}{Name of variable holding the counts (weight) in each group.}
 }
 \description{
 Calculate overall proportion of cases in each group that lie within a given

@@ -11,6 +11,7 @@ SMOOTH_K = 11
 #' @param dat Dataframe of pre-policy data to fit model to.  Needs a "month" column
 #' @param outcomename Outcome of interest
 #' @param lagless Boolean, include the lagged outcome, or not?
+#' @param ... Extra arguments passed to the lm() call.
 #' @export
 fit.model.default = function( dat, outcomename, lagless = FALSE, ... ) {
   monthname = "month"
@@ -97,7 +98,12 @@ make.fit.season.model = function( formula, no.lag = NULL ) {
 #' This is so we can show trendlines and so forth on plots.
 #'
 #' Ybar is defined for both pre and post policy datapoints.
-#'
+#' @param fit.model A function that takes data, fits a linear model, and returns
+#'   the fit model. This function needs an option to include (or not) lagged
+#'   covariates.
+#' @param outcomename String name of the outcome variable in dat.
+#' @param t0 last pre-policy timepoint
+#' @param dat Dataframe of the data.
 #' @return Predicted sequence for passed dataframe (as vector)
 #' @export
 generate.Ybars = function( fit.model, outcomename, t0, dat ) {
@@ -164,6 +170,9 @@ make.autoregressive.series = function( Ybar, Y.init, beta1, sigma,
 #'
 #' We do this so we can subtract this part off before smoothing so our smoother
 #' doesn't have to try and capture the seasonality stuff.
+#' @param fit0 Model fit to data.
+#' @param dat Data to predict outcomes for using fit0.
+#' @return Predictions as a numeric vector.
 generate.structure.sequence = function( fit0, dat ) {
   dat$lag.outcome = 0
   predict( fit0, newdata=dat )
@@ -234,6 +243,10 @@ generate.prediction.sequence = function( beta.vec, sigma,
 #'   bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 #'   want to smooth with an absolute bandwidth, not one as function of how long
 #'   the time series is.
+#' @param outcomename String name of the outcome variable in dat.
+#' @param t0 last pre-policy timepoint
+#' @param post.only Boolean of smooth post-policy data only, or full sequence.
+#' @param ... Extra arguments (not used in this function).
 #'
 #' @return An updated version of the 'res' dataframe with `Ysmooth`, the
 #'   smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
@@ -283,6 +296,8 @@ smooth.series = function( res, outcomename, t0,
 #' @param fit.model A function that takes data, fits a linear model, and returns
 #'   the fit model. This function needs an option to include (or not) lagged
 #'   covariates.
+#' @param outcomename String name of the outcome variable in dat.
+#' @param t0 last pre-policy timepoint
 #' @param covariates A dataframe with all covariates needed in the model fitting
 #'   defined by fit.model.
 #' @param smooth_k A rough proxy for the number of observations to primarily
@@ -297,6 +312,8 @@ smooth.series = function( res, outcomename, t0,
 #'   possible before smoothing.
 #' @param full.output If TRUE give back pieces for diagnostics of smoothing
 #'   process.
+#' @param t0 Last month of pre-policy.  Will start predicting at t0+1.
+#' @param outcomename The name of the column in dat which is our outcome.
 #'
 #' @export
 smooth.residuals = function( res, t0, outcomename,
@@ -509,7 +526,7 @@ add.lagged.covariates = function( dat,
 #' @return Single number (in this case mean of given months)
 #' @examples 
 #' data( mecklenberg )
-#' calculate.average.outcome( mecklenberg, "pbail" )
+#' calculate.average.outcome( mecklenberg, "pbail", months=1:24 )
 #' @rdname calculate.average.outcome
 #' @export
 #'
@@ -517,7 +534,7 @@ calculate.average.outcome = function( res, outcomename,
                                       months = 1:54,
                                       ... ) {
 
-  mts = filter( res, months %in% months )
+  mts = dplyr::filter( res, month %in% months )
   mean( mts[[outcomename]] )
 }
 
@@ -533,6 +550,7 @@ calculate.average.outcome = function( res, outcomename,
 #' @param outcomename Outcome to use.
 #' @param summarizer A function to calculate some summary quantity, Default:
 #'   calculate.average.outcome
+#' @param ... Extra arguments passed to the summarizer function.
 #' 
 #' @return List of the test statistic and reference distribution.
 #'
@@ -540,7 +558,6 @@ calculate.average.outcome = function( res, outcomename,
 aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate.average.outcome, ... ) {
-#browser()
   summary = predictions %>%
     nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
     mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
