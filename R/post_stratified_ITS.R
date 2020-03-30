@@ -29,9 +29,9 @@ calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$mont
     dat = dplyr::filter( dat, month >= t_min, month <= t_max )
 
     # calculate the total sizes for each group
-    sdat = dat %>% group_by_( groupname ) %>%
-         summarise( N = sum(!!rlang::sym(N)) )
-    sdat = sdat %>% ungroup() %>% mutate( pi.star = N / sum(N) )
+    sdat = dat %>% dplyr::group_by_( groupname ) %>%
+         dplyr::summarise( N = sum(!!rlang::sym(N)) )
+    sdat = sdat %>% dplyr::ungroup() %>% dplyr::mutate( pi.star = N / sum(N) )
 
     sdat
 }
@@ -57,16 +57,16 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
                            rich = TRUE, covariates =NULL ) {
 
     if ( is_count ) {
-        dd <- dat %>% group_by( month ) %>%
-            summarise( .Y = sum( (!!rlang::sym(outcomename)) ),
+        dd <- dat %>% dplyr::group_by( month ) %>%
+            dplyr::summarise( .Y = sum( (!!rlang::sym(outcomename)) ),
                      #  .Y.bar = sum( (!!rlang::sym(outcomename))  ) / sum(N),
                        N = sum(N) )
         dd[ outcomename ] = dd$.Y
        # dd[ paste0( outcomename, ".bar" ) ] = dd$.Y.bar
         dd$.Y = dd$.Y.bar = NULL
     } else {
-        dd <- dat %>% group_by( month ) %>%
-            summarise( .Y = sum( N * (!!rlang::sym(outcomename)) ) / sum(N),
+        dd <- dat %>% dplyr::group_by( month ) %>%
+            dplyr::summarise( .Y = sum( N * (!!rlang::sym(outcomename)) ) / sum(N),
                        N = sum(N) )
         dd[ outcomename ] = dd$.Y
         dd$.Y = NULL
@@ -76,10 +76,10 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
     if ( rich ) {
         # calculate group sizes
         ddwts = dat %>% dplyr::select_( "month", groupname, "N" ) %>%
-            group_by( month ) %>%
-            mutate( pi = N / sum(N ) ) %>%
+            dplyr::group_by( month ) %>%
+            dplyr::mutate( pi = N / sum(N ) ) %>%
             dplyr::select( -N ) %>%
-            spread_( groupname, "pi", sep=".")
+            tidyr::spread_( groupname, "pi", sep=".")
         names(ddwts) = gsub( groupname, "pi", names(ddwts) )
 
         if ( is.null( covariates ) ) {
@@ -92,11 +92,11 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
         
         # throw in group baselines and covariates as well in wide form
         ddg = dat[ c( "month", groupname, outcomename, covariates ) ]
-        ddg = spread_( ddg, groupname, outcomename, sep="." )
+        ddg = tidyr::spread_( ddg, groupname, outcomename, sep="." )
         names(ddg) = gsub( groupname, outcomename, names(ddg) )
         stopifnot(nrow(ddg) == nrow( dd ) )  # possibly covariates varied in spread?
 
-        dd = bind_cols( dd, ddg, ddwts )
+        dd = dplyr::bind_cols( dd, ddg, ddwts )
         dd$month1 = dd$month2 = NULL
     }
 
@@ -132,13 +132,13 @@ adjust_data = function( dat, outcomename, groupname, pi.star, is_count=FALSE,
     }
 
     # calculate adjusted outcomes
-    adj.dat = adat %>% group_by( month ) %>%
-        summarise( #.Y = sum( N * ( !!rlang::sym( outcomename ) ) / sum(N) ),
+    adj.dat = adat %>% dplyr::group_by( month ) %>%
+        dplyr::summarise( #.Y = sum( N * ( !!rlang::sym( outcomename ) ) / sum(N) ),
                    .Y.adj = sum( pi.star * !!rlang::sym( outcomename ) ),
                    N = sum( N ) )
 
     if ( is_count ) {
-        adj.dat = mutate( adj.dat, #.Y = .Y * N,
+        adj.dat = dplyr::mutate( adj.dat, #.Y = .Y * N,
                           .Y.adj = .Y.adj * N )
     }
 
@@ -152,7 +152,7 @@ adjust_data = function( dat, outcomename, groupname, pi.star, is_count=FALSE,
         adj.dat = merge( adj.dat, sdat, by=c("N","month"), all=TRUE )
     }
 
-    arrange( adj.dat, month )
+    dplyr::arrange( adj.dat, month )
 }
 
 
@@ -189,9 +189,9 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
     }
     
     if ( method == "jersey" ) {
-      N.drug = rpois( length( t ), lambda=700 )
-      N.violent = rpois( length( t ), lambda=400 )
-      N.property = rpois( length( t ), lambda=500 )
+      N.drug = stats::rpois( length( t ), lambda=700 )
+      N.violent = stats::rpois( length( t ), lambda=400 )
+      N.property = stats::rpois( length( t ), lambda=500 )
       N.drug = pmax( 0.55, pmin( 1, 1 - (t - t0) / 25 ) ) * N.drug
     }
     
@@ -200,22 +200,22 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
         # impact on proportion of cases with outcome
         prop.base = arm::logit( seq( 0.8, 0.4, length.out=length(t) ) )
 
-        prop.violent = arm::invlogit( prop.base - 1.5 + rnorm( length(t), mean=0, sd=0.05 )
+        prop.violent = arm::invlogit( prop.base - 1.5 + stats::rnorm( length(t), mean=0, sd=0.05 )
                                       + (t>t0) * pmin( 0.3*(t-t0), 1.5 ) )
 
-        prop.drug =    arm::invlogit( prop.base + rnorm( length(t), mean=0, sd=0.05 )
+        prop.drug =    arm::invlogit( prop.base + stats::rnorm( length(t), mean=0, sd=0.05 )
                                       - (t>t0) * (0.05*(t-t0)) )
     } else {
       # impact on proportion of cases with outcome
       prop.base = arm::logit( seq( 0.5, 0.55, length.out=length(t) ) )
       
-      prop.violent = arm::invlogit( prop.base + 1.5 + rnorm( length(t), mean=0, sd=0.02 )
+      prop.violent = arm::invlogit( prop.base + 1.5 + stats::rnorm( length(t), mean=0, sd=0.02 )
                                     - (t>t0) * (0.01*(t-t0)) )
       
-      prop.property = arm::invlogit( prop.base + 1 + rnorm( length(t), mean=0, sd=0.02 )
+      prop.property = arm::invlogit( prop.base + 1 + stats::rnorm( length(t), mean=0, sd=0.02 )
                                     - (t>t0) * (0.003*(t-t0)) )
       
-      prop.drug =    arm::invlogit( prop.base + rnorm( length(t), mean=0, sd=0.02 ) 
+      prop.drug =    arm::invlogit( prop.base + stats::rnorm( length(t), mean=0, sd=0.02 ) 
                                     - (t>t0) * (0.005*(t-t0)) )
       
     }
@@ -229,9 +229,9 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
 
         # impact on proportion of cases with outcome
         prop.drug = 0.6 - 0.01 * t   # baseline index (will recalculate below)
-        prop.violent = arm::invlogit( prop.drug/2 + rnorm( length(t), mean=0, sd=0.15 )
+        prop.violent = arm::invlogit( prop.drug/2 + stats::rnorm( length(t), mean=0, sd=0.15 )
                                       + (t>t0) * pmin( 0.3*(t-t0), 1.5 ) )
-        prop.drug = arm::invlogit( -1 + prop.drug - (t>t0)* (0.15*(t-t0)) + rnorm( length(t), mean=0, sd=0.15 ) )
+        prop.drug = arm::invlogit( -1 + prop.drug - (t>t0)* (0.15*(t-t0)) + stats::rnorm( length(t), mean=0, sd=0.15 ) )
     }
 
     ## Scenario 2: change in number of drug cases, but no impact on case handling within category
@@ -241,8 +241,8 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
         N.violent = round( 100 - 0.1 * t + 10 * sin( 2 * pi * t / 12) )
 
         prop.drug = 0.6 - 0.01 * t
-        prop.violent = arm::invlogit( prop.drug + 0.2 + rnorm( length(t), mean=0, sd=0.15 ) )
-        prop.drug = arm::invlogit( -2 + prop.drug + rnorm( length(t), mean=0, sd=0.15 ) )
+        prop.violent = arm::invlogit( prop.drug + 0.2 + stats::rnorm( length(t), mean=0, sd=0.15 ) )
+        prop.drug = arm::invlogit( -2 + prop.drug + stats::rnorm( length(t), mean=0, sd=0.15 ) )
     }
 
 
@@ -252,10 +252,10 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
         data.frame( month = t, type=type, N=N, Y=Y, prop = Y / N, stringsAsFactors = FALSE )
     }
 
-    df = bind_rows( make.frame( N.drug, prop.drug, "drug" ),
+    df = dplyr::bind_rows( make.frame( N.drug, prop.drug, "drug" ),
                     make.frame( N.violent, prop.violent, "violent" ) )
     if ( method =="jersey" ) {
-      df = bind_rows( df, 
+      df = dplyr::bind_rows( df, 
                       make.frame( N.property, prop.property, "property" ) )
     }
     df = mutate( df,
@@ -265,7 +265,7 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
                  B = cos( 2 * pi * month / 12 ),
                  Tx = as.numeric(month >= t0) )
 
-    df = arrange( df, month )
+    df = dplyr::arrange( df, month )
     df
 }
 
@@ -294,16 +294,16 @@ if ( FALSE ) {
     head( sdat )
     sdat$type = "all"
 
-    d2 = bind_rows( dat, sdat )
-    d2 = gather( d2, Y, N, prop, key="variable", value="outcome" )
-    ggplot( d2, aes( month, outcome, col=type ) ) +
-        facet_wrap( ~ variable , scales = "free_y" ) +
-        geom_line() +
-        geom_vline( xintercept=t0, col="red" )
+    d2 = dplyr::bind_rows( dat, sdat )
+    d2 = tidyr::gather( d2, Y, N, prop, key="variable", value="outcome" )
+    ggplot2::ggplot( d2, ggplot2::aes( month, outcome, col=type ) ) +
+        ggplot2::facet_wrap( ~ variable , scales = "free_y" ) +
+        ggplot2::geom_line() +
+        ggplot2::geom_vline( xintercept=t0, col="red" )
 
 
 
-    dat %>% group_by( type ) %>% summarise( N.bar = mean(N),
+    dat %>% dplyr::group_by( type ) %>% dplyr::summarise( N.bar = mean(N),
                                             Y.bar = mean(Y),
                                             prop.bar = mean(prop) )
 
@@ -331,15 +331,15 @@ if ( FALSE ) {
 
     d1 = gather( adjdat, starts_with( "pi" ), key="group", value="pi" )
     head( d1 )
-    ggplot( d1, aes( month, pi, col=group ) ) +
-        geom_line() +
-        labs( title="Sizes of the groups")
+    ggplot2::ggplot( d1, ggplot2::aes( month, pi, col=group ) ) +
+        ggplot2::geom_line() +
+        ggplot2::labs( title="Sizes of the groups")
 
-    d2 = gather( adjdat, starts_with( "prop" ), key="outcome", value="Y" )
+    d2 = tidyr::gather( adjdat, starts_with( "prop" ), key="outcome", value="Y" )
     head( d2 )
 
-    ggplot( d2, aes( month, Y, col=outcome ) ) +
-        geom_line()
+    ggplot2::ggplot( d2, ggplot2::aes( d2$month, d2$Y, col=outcome ) ) +
+        ggplot2::geom_line()
 
     # checking calculations
     head( adjdat )
@@ -351,11 +351,11 @@ if ( FALSE ) {
 
     adjdat = adjust_data( dat, "Y", "type", pis, is_count = TRUE )
     head( adjdat )
-    d2 = gather( adjdat, Y.adj, Y, starts_with( "type." ), key="outcome", value="Y" )
+    d2 = tidyr::gather( adjdat, Y.adj, Y, starts_with( "type." ), key="outcome", value="Y" )
     head( d2 )
 
-    ggplot( d2, aes( month, Y, col=outcome ) ) +
-        geom_line()
+    ggplot2::ggplot( d2, ggplot2::aes( d2$month, d2$Y, col=outcome ) ) +
+        ggplot2::geom_line()
 
 }
 
@@ -396,13 +396,13 @@ if ( FALSE ) {
     envelope.drug = process_outcome_model( "prop.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
     envelope.violent = process_outcome_model( "prop.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    env = bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
+    env = dplyr::bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
     head( env )
-    plt <- ggplot( env, aes( month, col=model ) ) +
-        geom_line( aes(y=Ystar), lty=2 ) +
-        geom_line( aes(y=Y)) + geom_point( aes( y=Y ), size=0.5 ) +
+    plt <- ggplot2::ggplot( env, ggplot2::aes( month, col=model ) ) +
+        ggplot2::geom_line( ggplot2::aes(y= env$Ystar), lty=2 ) +
+        ggplot2::geom_line( ggplot2::aes(y=env$Y)) + ggplot2::geom_point( ggplot2::aes( y=env$Y ), size=0.5 ) +
         #geom_line( aes(y=Ysmooth1), lty=2 ) +
-        geom_vline( xintercept=t0 )
+        ggplot2::geom_vline( xintercept=t0 )
 
     #plt
 
@@ -429,17 +429,17 @@ if ( FALSE ) {
     envelope.drug = process_outcome_model( "Y.drug", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
     envelope.violent = process_outcome_model( "Y.violent", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-    env = bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
+    env = dplyr::bind_rows( raw=envelope, adjusted=envelope.adj, drug=envelope.drug, violent=envelope.violent, .id="model")
     head( env )
-    plt <- ggplot( env, aes( month, col=model ) ) +
-        geom_line( aes(y=Ystar), lty=2 ) +
-        geom_line( aes(y=Y)) + geom_point( aes( y=Y ), size=0.5 ) +
-        #geom_line( aes(y=Ysmooth1), lty=2 ) +
-        geom_vline( xintercept=t0 )
+    plt <- ggplot2::ggplot( env, ggplot2::aes( month, col=model ) ) +
+        ggplot2::geom_line( aes(y= env$Ystar), lty=2 ) +
+        ggplot2::geom_line( aes(y= env$Y)) + ggplot2::geom_point( aes( y=env$Y ), size=0.5 ) +
+        # ggplot2::geom_line( aes(y=Ysmooth1), lty=2 ) +
+        ggplot2::geom_vline( xintercept=t0 )
 
     #plt
 
-    plt +         facet_wrap( ~model )
+    plt +         ggplot2::facet_wrap( ~model )
 
 
 }

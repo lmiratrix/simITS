@@ -34,7 +34,7 @@ make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega 
                            coef_temp = 0.10,
                            coef_sin = c( 0, 0 ),
                            coef_tx = c( 0, 0.25, 5 ) ) {
-  require( tidyverse )
+  # require( tidyverse )
 
   #initial check for input parametes
   stopifnot(is.numeric(t_min), is.numeric(t_max), is.numeric(t0), is.numeric(rho), is.numeric(sd.omega),
@@ -43,7 +43,7 @@ make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega 
   # Make some fake data
   dat = data.frame( month = t_min:t_max )
   N = nrow( dat )
-  dat = mutate( dat, temperature = 54 + 35 * sin( 2 * pi * (month + 7) / 12 + rnorm( n(), 0, 0.5 ) ),
+  dat = mutate( dat, temperature = 54 + 35 * sin( 2 * pi * (month + 7) / 12 + stats::rnorm( dplyr::n(), 0, 0.5 ) ),
                 sin.m = sin( 2 * pi * month / 12 ),
                 cos.m = cos( 2 * pi * month / 12 ),
                 Q1 = 0 + (month %%12 < 3),
@@ -53,13 +53,13 @@ make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega 
                 post = month > t0 )
 
   # make outcome
-  dmat = model.matrix( ~ 1 + month + Q1 + Q2 + Q3 + Q4 + temperature + sin.m + cos.m, data=dat )
+  dmat = stats::model.matrix( ~ 1 + month + Q1 + Q2 + Q3 + Q4 + temperature + sin.m + cos.m, data=dat )
   dat$Ystr0 = as.numeric( dmat %*% c( coef_line, coef_q, coef_temp, coef_sin ) )
-  #Ypost = model.matrix( ~ 1 + I(month-t0), data=dat )
+  #Ypost = stats::model.matrix( ~ 1 + I(month-t0), data=dat )
   dat$Ystr = dat$Ystr0 + as.numeric( with( dat, coef_tx[[1]] * post + coef_tx[[2]] * post * (month-t0) + coef_tx[[3]] * (month > t0+12) ) )
 
   # make autoregressive residual
-  eps = rnorm( N, mean = 0, sd = sd.omega )
+  eps = stats::rnorm( N, mean = 0, sd = sd.omega )
   for ( i in 2:N ) {
     eps[i] = rho * eps[i-1] + eps[i]
   }
@@ -74,16 +74,16 @@ make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega 
 if ( FALSE ) {
 
   df = make_fake_data( t_min = -80, t_max = 12, t0 = 0 )
-  ggplot( df, aes( month, Y ) ) +
-    geom_line() +
-    geom_line( aes( y=Ystr ), col="red" )
+  ggplot2::facet_wrapggplot( df, ggplot2::facet_wrapaes( month, Y ) ) +
+    ggplot2::geom_line() +
+    ggplot2::geom_line( ggplot2::aes( y=Ystr ), col="red" )
 
 
   df = make_fake_data( t_min = -80, t_max = 12, t0 = 0, sd.omega = 3,
                        rho = 0)
-  ggplot( df, aes( month, Y ) ) +
-    geom_line() +
-    geom_line( aes( y=Ystr ), col="red" )
+  ggplot2::ggplot( df, aes( month, Y ) ) +
+    ggplot2::geom_line() +
+    ggplot2::geom_line( ggplot2::aes( y=Ystr ), col="red" )
 
 
 
@@ -95,11 +95,11 @@ if ( FALSE ) {
                        coef_temp = 0,
                        coef_sin = c( 5, 0 ),
                        coef_tx = c( 0, 0.5, 5 ) )
-  ggplot( df, aes( month, Y ) ) +
-    geom_line() +
-    geom_line( aes( y=Ystr ), col="red" ) +
-    geom_line( aes( y=Ystr0 ), col="green" ) +
-    geom_hline( yintercept = 0)
+  ggplot2::ggplot( df, ggplot2::aes( month, Y ) ) +
+    ggplot2::geom_line() +
+    ggplot2::geom_line( ggplot2::aes( y=Ystr ), col="red" ) +
+    ggplot2::geom_line( ggplot2::aes( y=Ystr0 ), col="green" ) +
+    ggplot2::geom_hline( yintercept = 0)
 
 
   fit.season.model.qtemp =  make_fit_season_model( ~  Q2 + Q3 + Q4 )
@@ -126,9 +126,9 @@ if ( FALSE ) {
   head( envelope.smooth )
 
   plt <- make_envelope_graph( envelope.smooth, t0=t0 ) +
-    geom_vline( xintercept=c(0,t0), col="red", lty=c(2,1) ) +
-    geom_hline( yintercept = 0 ) +
-    geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.1, fill="red" )
+    ggplot2::geom_vline( xintercept=c(0,t0), col="red", lty=c(2,1) ) +
+    ggplot2::geom_hline( yintercept = 0 ) +
+    ggplot2::geom_ribbon( data=envelope, ggplot2::aes( ymin=Ymin, ymax=Ymax ), alpha=0.1, fill="red" )
 
   plt
 

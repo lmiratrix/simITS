@@ -4,7 +4,8 @@
 \name{newjersey}
 \alias{newjersey}
 \title{New Jersey PSA Reform aggregate data}
-\format{A data frame with 106 rows and 11 variables:
+\format{
+A data frame with 106 rows and 11 variables:
 \describe{
   \item{\code{month}}{integer Index of month.}
   \item{\code{sin.m}}{double cos of month number}
@@ -18,7 +19,8 @@
   \item{\code{n.summons}}{double Number of summons arrests}
   \item{\code{n}}{double Total number of arrests}
   \item{\code{temperature}}{double Average temperature in New Jersey that month.}
-}}
+}
+}
 \usage{
 newjersey
 }

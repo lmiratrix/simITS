@@ -4,22 +4,24 @@ Title: Analysis via Simulation of Interrupted Time Series (ITS) Data
 Version: 0.1.0
 Author: Luke Miratrix, Brit Henderson, Chloe Anderson
 Maintainer: Luke Miratrix <lmiratrix@g.harvard.edu>
-Description: Uses simulation to create prediction intervals for post-policy outcomes in Interrupted Time Series (ITS) designs. 
+Description: Uses simulation to create prediction intervals for post-policy outcomes in Interrupted Time Series (ITS) designs.
     This work partially supported by the Arnold Foundation in collaboration with MDRC.
-Depends: R (>= 2.10),
-    rlang,
-    dplyr
+Depends: R (>= 2.10), dplyr, rlang
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: knitr,
     nlme,
-    dplyr,
     survival,
     boot,
     testthat,
     tidyverse,
     stats,
-    cluster
-RoxygenNote: 7.0.2
+    cluster,
+    arm,
+    ggplot2,
+    plyr,
+    purrr,
+    tidyr
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr

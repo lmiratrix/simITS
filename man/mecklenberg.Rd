@@ -4,7 +4,8 @@
 \name{mecklenberg}
 \alias{mecklenberg}
 \title{Mechlenberg PSA Reform Data}
-\format{A data frame with 54 rows and 10 variables:
+\format{
+A data frame with 54 rows and 10 variables:
 \describe{
   \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
   \item{\code{karr}}{integer COLUMN_DESCRIPTION}
@@ -16,7 +17,8 @@
   \item{\code{avg_t2d}}{double COLUMN_DESCRIPTION}
   \item{\code{pstint7}}{double COLUMN_DESCRIPTION}
   \item{\code{pstint30}}{double COLUMN_DESCRIPTION}
-}}
+}
+}
 \usage{
 mecklenberg
 }

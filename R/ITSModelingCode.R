@@ -12,7 +12,9 @@ SMOOTH_K = 11
 #' @param outcomename Outcome of interest
 #' @param lagless Boolean, include the lagged outcome, or not?
 #' @param ... Extra arguments passed to the lm() call.
+
 #' @export
+
 fit_model.default = function( dat, outcomename, lagless = FALSE, ... ) {
   monthname = "month"
 
@@ -22,7 +24,7 @@ fit_model.default = function( dat, outcomename, lagless = FALSE, ... ) {
     form = paste0( outcomename, " ~ ", monthname, " + lag.outcome" )
   }
 
-  M0 = lm( stats::as.formula( form ), data=dat[-c(1),], ... )
+  M0 = stats::lm( stats::as.formula( form ), data=dat[-c(1),], ... )
   M0
 }
 
@@ -44,28 +46,28 @@ fit_model.default = function( dat, outcomename, lagless = FALSE, ... ) {
 #' @export
 make_fit_season_model = function( formula, no.lag = NULL ) {
 
-  stopifnot( attr( terms( formula ), "response" ) == 0 )
+  stopifnot( attr( stats::terms( formula ), "response" ) == 0 )
 
-  formula = update.formula( formula, ~ . - month )
+  formula = stats::update.formula( formula, ~ . - month )
 
   vrs = all.vars( formula )
 
   # add in the no lag elements
   if ( !is.null( no.lag ) ) {
-    stopifnot( attr( terms( no.lag ), "response" ) == 0 )
+    stopifnot( attr( stats::terms( no.lag ), "response" ) == 0 )
 
     vrno = all.vars( no.lag )
     vrno = paste0( vrno, collapse = " + " )
-    formula = update.formula( formula, paste0( "~ . + ", vrno ) )
+    formula = stats::update.formula( formula, paste0( "~ . + ", vrno ) )
   }
 
   if ( length( vrs ) > 0 ) {
     vrs
     lgs = paste0( "lag.", vrs, collapse = " + " )
     lgs
-    lag.form = update.formula( formula, paste0( "~ . + lag.outcome + ", lgs ) )
+    lag.form = stats::update.formula( formula, paste0( "~ . + lag.outcome + ", lgs ) )
   } else {
-    lag.form = update.formula( formula, "~ . + lag.outcome" )
+    lag.form = stats::update.formula( formula, "~ . + lag.outcome" )
   }
 
   fnct = function( dat, outcomename, lagless = FALSE, ... ) {
@@ -74,9 +76,9 @@ make_fit_season_model = function( formula, no.lag = NULL ) {
     } else {
       the.formula = lag.form
     }
-    the.formula = update( the.formula, stats::as.formula( paste0( outcomename, " ~ 1 + month + ." ) ) )
+    the.formula = stats::update( the.formula, stats::as.formula( paste0( outcomename, " ~ 1 + month + ." ) ) )
 
-    M0 = lm( the.formula, data=dat[-c(1), ], ...)
+    M0 = stats::lm( the.formula, data=dat[-c(1), ], ...)
     M0
   }
   attr( fnct, "lags" ) = vrs
@@ -114,10 +116,10 @@ generate_Ybars = function( fit_model, outcomename, t0, dat ) {
   #lgs = grep( "lag.", vrs, value=TRUE )
   #fmup = paste0( "~ . - ", paste( lgs, collapse =" - " ), collapse="" )
 
-  #fit0.lagless = update( fit0, fmup, data=dat )
+  #fit0.lagless = stats::update( fit0, fmup, data=dat )
   M0.lagless = fit_model( dplyr::filter( dat, month <= t0 ), outcomename, lagless=TRUE )
 
-  predict( M0.lagless, newdata = dat )
+  stats::predict( M0.lagless, newdata = dat )
 }
 
 
@@ -150,7 +152,7 @@ make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
     if ( expected ) {
       Ys = c( Y.init, rep( 0, length(Ybar) ) )
     } else {
-      Ys = c( Y.init, rnorm( length( Ybar ), mean=0, sd=sigma ) )
+      Ys = c( Y.init, stats::rnorm( length( Ybar ), mean=0, sd=sigma ) )
     }
     for ( i in seq_along( Ybar ) ) {
         Ys[i+1] = Ybar[[i]] + beta1*Ys[[i]] + Ys[[i+1]]
@@ -175,7 +177,7 @@ make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
 #' @return Predictions as a numeric vector.
 generate_structure_sequence = function( fit0, dat ) {
   dat$lag.outcome = 0
-  predict( fit0, newdata=dat )
+  stats::predict( fit0, newdata=dat )
 }
 
 
@@ -193,12 +195,11 @@ generate_structure_sequence = function( fit0, dat ) {
 #' @return Dataframe, one row per timepoint.  Columns are 'month' (the time),
 #'   'Ybar' the predicted outcomes from the model, and 'Ystar', a concatenation
 #'   of the pre-policy series followed by the synthetic sequence.
-#'
 #' @export
 generate_prediction_sequence = function( beta.vec, sigma,
                                          dat, fit0, outcomename, t0 ) {
     fit0$coefficients = beta.vec
-    beta1 = coef( fit0 )[[ "lag.outcome" ]]
+    beta1 = stats::coef( fit0 )[[ "lag.outcome" ]]
 
     # Predict what we would see, setting lagged outcome to 0 (to set up simulation).
     dat$Ybar.core = generate_structure_sequence( fit0, dat=dat )
@@ -222,7 +223,7 @@ generate_prediction_sequence = function( beta.vec, sigma,
                             Ybar = dat.pre$Ybar,
                             Ystar = dat.pre[[outcomename]] )
 
-    bind_rows( prepolicy,
+    dplyr::bind_rows( prepolicy,
                dplyr::select( dat.post, month, Ybar, Ystar ) )
 }
 
@@ -422,7 +423,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
     # Generate collection of plausible beta values and sigma values we
     # will use for our predictions
     a = arm::sim( fit0, n.sims=R )
-    coefs = coef( a )
+    coefs = stats::coef( a )
 
     # How often are our posterior lag.outcome coefficients larger than 1, which
     # creates expotential blow-up in our series.
@@ -433,7 +434,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
     coefs = as.data.frame( coefs )
 
     # get names of coefficients that were not dropped (e.g., due to colinearity)
-    cc = names( coef( fit0 )  )[ !is.na( coef( fit0 ) ) ]
+    cc = names( stats::coef( fit0 )  )[ !is.na( stats::coef( fit0 ) ) ]
 
     colnames( coefs ) = cc
 
@@ -443,7 +444,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
     # and unlist converts that back to a vector.  The map does it to each of our 1
     # row dataframes we get from the split() call.
     coefs = split( coefs, seq( nrow(coefs) ) ) %>%
-        map( as.list ) %>% map( unlist )
+        purrr::map( as.list ) %>% purrr::map( unlist )
 
     # get our sigmas
     sigmas = a@sigma
@@ -452,7 +453,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
 
     # For each plausible coefficient vector, generate a predictive series.
-    res = map2_dfr( coefs, sigmas, generate_prediction_sequence, .id="Run",
+    res = purrr::map2_dfr( coefs, sigmas, generate_prediction_sequence, .id="Run",
                     dat=dat, fit0 = fit0, outcomename=outcomename, t0=t0 )
 
     res
@@ -475,7 +476,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 make_many_predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 
   # Repeatidly generate a predictive series.
-  res = plyr::rdply( R, generate_prediction_sequence( coef( fit0 ), sigma( fit0 ),
+  res = plyr::rdply( R, generate_prediction_sequence( stats::coef( fit0 ), stats::sigma( fit0 ),
                                                       dat=dat, fit0 = fit0, outcomename=outcomename, t0=t0 ),
                      .id = "Run" )
 
@@ -503,7 +504,7 @@ add_lagged_covariates = function( dat,
   }
   
   # make lagged covariates for modeling
-  dat = mutate( dat, lag.outcome = lag( dat[[outcomename]] ) )
+  dat = dplyr::mutate( dat, lag.outcome = dplyr::lag( dat[[outcomename]] ) )
 
   if ( !is.null( covariates ) ) {
     if ( !is.null( attr( covariates, "lags" ) ) ) {
@@ -512,7 +513,7 @@ add_lagged_covariates = function( dat,
 
     lc = paste0( "lag.", covariates )
     for ( i in seq_along( covariates ) ) {
-      dat[ lc[[i]] ] = lag( dat[[ covariates[i] ]] )
+      dat[ lc[[i]] ] = stats::lag( dat[[ covariates[i] ]] )
     }
   }
 
@@ -530,6 +531,7 @@ add_lagged_covariates = function( dat,
 #' @param months Which months to average over, Default: 1:18
 #' @param ... Other parameters (ignored)
 #' @return Single number (in this case mean of given months)
+#' @importFrom utils data
 #' @examples 
 #' data( mecklenberg )
 #' calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
@@ -565,9 +567,9 @@ aggregate_simulation_results = function( orig.data, predictions,
                                          outcomename,
                                          summarizer = calculate_average_outcome, ... ) {
   summary = predictions %>%
-    nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
-    mutate( t = map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
-                 unnest( t )
+    tidyr::nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
+    dplyr::mutate( t = purrr::map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
+                 tidyr::unnest( t )
 
   sum.obs = summarizer( orig.data, outcomename = outcomename, ... )
 
@@ -605,7 +607,7 @@ aggregate_simulation_results = function( orig.data, predictions,
 #' @export
 extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
                               smoother = smooth_series, full.output = FALSE,fix.params = FALSE, ...) {
-  require( tidyverse )
+  # require( tidyverse )
 
   if ( fix.params ) {
     predictions = make_many_predictions.plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
@@ -616,10 +618,10 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
   # If we are smoothing, smooth all the simulation trajectories
   if ( smooth ) {
     predictions = predictions %>%
-      nest( data = c(month, Ybar, Ystar) ) %>%
-      mutate( Ysmooth = map( data, smoother,
+      tidyr::nest( data = c(month, Ybar, Ystar) ) %>%
+      dplyr::mutate( Ysmooth = purrr::map( data, smoother,
                              outcomename="Ystar", t0 = t0, ... ) ) %>%
-      unnest(cols = c(data, Ysmooth))
+      tidyr::unnest(cols = c(data, Ysmooth))
   } else {
     predictions$Ysmooth = NA
   }
@@ -629,25 +631,25 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
 
     if ( !smooth ) {
 
-      p2 = predictions %>% group_by( month ) %>%
-        dplyr::summarise( Ymin = quantile( Ystar, 0.025, na.rm=TRUE ),
-                   Ymax = quantile( Ystar, 0.975, na.rm=TRUE  ),
+      p2 = predictions %>% dplyr::group_by( month ) %>%
+        dplyr::summarise( Ymin = stats::quantile( Ystar, 0.025, na.rm=TRUE ),
+                   Ymax = stats::quantile( Ystar, 0.975, na.rm=TRUE  ),
                    range = (Ymax - Ymin),
-                   SE = sd(Ystar, na.rm=TRUE ),
-                   Ystar = median( Ystar, na.rm=TRUE  ) )
+                   SE = stats::sd(Ystar, na.rm=TRUE ),
+                   Ystar = stats::median( Ystar, na.rm=TRUE  ) )
       p2$Y = dat[[outcomename]]
       p2$Ysmooth = NA
       p2$Ysmooth1 = NA
 
     } else {
 
-      p2 = predictions %>% group_by( month ) %>%
-        dplyr::summarise( Ymin = quantile( Ysmooth, 0.025, na.rm=TRUE ),
-                   Ymax = quantile( Ysmooth, 0.975, na.rm=TRUE ),
+      p2 = predictions %>% dplyr::group_by( month ) %>%
+        dplyr::summarise( Ymin = stats::quantile( Ysmooth, 0.025, na.rm=TRUE ),
+                   Ymax = stats::quantile( Ysmooth, 0.975, na.rm=TRUE ),
                    range = (Ymax - Ymin),
-                   SE = sd(Ysmooth, na.rm=TRUE ),
-                   Ysmooth = median( Ysmooth, na.rm=TRUE  ),
-                   Ystar = median( Ystar, na.rm=TRUE  ) )
+                   SE = stats::sd(Ysmooth, na.rm=TRUE ),
+                   Ysmooth = stats::median( Ysmooth, na.rm=TRUE  ),
+                   Ystar = stats::median( Ystar, na.rm=TRUE  ) )
 
       # Add in smoothed true data line, smoothing the same way as we did with our synthetic lines.
       full.dat = data.frame( month=dat$month, Y = dat[[outcomename]] )
@@ -671,7 +673,7 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
 
 drop.extra.covariates = function( M0, data  ) {
 
-  cfs = coef( M0 )
+  cfs = stats::coef( M0 )
   nas = names( cfs )[ is.na( cfs ) ]
 
   if ( length( nas ) > 0 ) {
@@ -680,7 +682,7 @@ drop.extra.covariates = function( M0, data  ) {
 
     warning( paste0( "Dropped covariates due to colinearity with update of: ~ . - ", nas ) )
 
-    update( M0, formula. = stats::as.formula( paste( "~ . ", nas, sep= "-"  ) ), data=data )
+    stats::update( M0, formula. = stats::as.formula( paste( "~ . ", nas, sep= "-"  ) ), data=data )
   } else {
     # No need to take action
     M0
@@ -737,13 +739,13 @@ process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
 
     M0 = fit_model( dat.pre, outcomename )
 
-    if ( any( is.na( coef( M0 ) ) ) ) {
+    if ( any( is.na( stats::coef( M0 ) ) ) ) {
         M0 = drop.extra.covariates( M0, dat.pre[-c(1),] )
     }
 
     # Generate the smoother function to pass to extrapolate_model
     if ( smooth && is.null( smoother ) ) {
-      M0full = model.frame( M0, data=dat, na.action=NULL )
+      M0full = stats::model.frame( M0, data=dat, na.action=NULL )
       smoother = make_model_smoother( covariates=M0full, fit_model = fit_model )
     }
 
@@ -780,22 +782,22 @@ make_envelope_graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
     #ft = dplyr::filter( envelope, month == t0+1 )
     #ft$month = ft$month - 0.5
     #ft$Ysmooth = ft$Ysmooth1 = ft$Y = NA
-    #envelope = bind_rows( envelope, ft )
+    #envelope = dplyr::bind_rows( envelope, ft )
     t0mo = which( envelope$month == t0 )
     envelope$Ysmooth[t0mo] =  envelope$Ymin[t0mo] =  envelope$Ymax[t0mo] =  envelope$Y[t0mo]
 
-    plt = ggplot( envelope, aes( month ) ) +
-        geom_line( aes( y=Y ), alpha = 0.6 ) + geom_point( aes( y=Y ) ) +
-        geom_vline( xintercept=t0, col="red" ) +
-        geom_point( x=t0, y=Y.init, col="red" ) +
-        geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2, fill="green", na.rm=TRUE ) +
-        labs( ylab=ylab, xlab=xlab )
+    plt = ggplot2::ggplot( envelope, ggplot2::aes( envelope$month ) ) +
+        ggplot2::geom_line( ggplot2::aes( y= envelope$Y ), alpha = 0.6 ) + ggplot2::geom_point( ggplot2::aes( y=envelope$Y ) ) +
+        ggplot2::geom_vline( xintercept=t0, col="red" ) +
+        ggplot2::geom_point( x=t0, y=Y.init, col="red" ) +
+       ggplot2:: geom_ribbon( ggplot2::aes( ymin=envelope$Ymin, ymax=envelope$Ymax ), alpha=0.2, fill="green", na.rm=TRUE ) +
+        ggplot2::labs( ylab=ylab, xlab=xlab )
 
     if ( has.smooth ) {
-      plt = plt + geom_line( aes( y=Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
-        geom_line( aes( y=Ysmooth1 ), color = "red", na.rm=TRUE )
+      plt = plt + ggplot2::geom_line( ggplot2::aes( y=envelope$Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
+        ggplot2::geom_line( ggplot2::aes( y=envelope$Ysmooth1 ), color = "red", na.rm=TRUE )
     } else {
-      plt = plt + geom_line( data=dplyr::filter( envelope, month >= t0 ), aes( y=Ystar ) )
+      plt = plt + ggplot2::geom_line( data=dplyr::filter( envelope, month >= t0 ), ggplot2::aes( y=envelope$Ystar ) )
     }
 
     plt
