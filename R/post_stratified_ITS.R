@@ -24,14 +24,14 @@
 calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$month ), N = "N" ) {
 
   stopifnot( N %in% names( dat ) )
-  
+  #groupname.q = quo( groupname )
     # select target months to calibrate averages on
     dat = dplyr::filter( dat, month >= t_min, month <= t_max )
 
     # calculate the total sizes for each group
-    sdat = dat %>% dplyr::group_by_( groupname ) %>%
+    sdat = dat %>% dplyr::group_by_at( groupname ) %>%
          dplyr::summarise( N = sum(!!rlang::sym(N)) )
-    sdat = sdat %>% dplyr::ungroup() %>% dplyr::mutate( pi.star = N / sum(N) )
+    sdat = sdat %>% dplyr::ungroup() %>% dplyr::mutate( pi_star = N / sum(N) )
 
     sdat
 }
@@ -54,8 +54,16 @@ calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$mont
 #'   Pass as list of column names of dat
 #' @export
 aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
-                           rich = TRUE, covariates =NULL ) {
+                           rich = TRUE, covariates = NULL ) {
 
+  if ( is.null( covariates ) ) {
+    covariates = c()
+  } else {
+    if ( !all( covariates %in% names( dat ) ) ) {
+      stop( "Covariates listed that are not in dataframe" )
+    }
+  }
+  
     if ( is_count ) {
         dd <- dat %>% dplyr::group_by( month ) %>%
             dplyr::summarise( .Y = sum( (!!rlang::sym(outcomename)) ),
@@ -75,24 +83,17 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 
     if ( rich ) {
         # calculate group sizes
-        ddwts = dat %>% dplyr::select_( "month", groupname, "N" ) %>%
-            dplyr::group_by( month ) %>%
-            dplyr::mutate( pi = N / sum(N ) ) %>%
-            dplyr::select( -N ) %>%
-            tidyr::spread_( groupname, "pi", sep=".")
-        names(ddwts) = gsub( groupname, "pi", names(ddwts) )
-
-        if ( is.null( covariates ) ) {
-          covariates = c()
-        } else {
-          if ( !all( covariates %in% names( dat ) ) ) {
-            stop( "Covariates listed that are not in dataframe" )
-          }
-        }
+      ddwts = dat %>% dplyr::select( "month", groupname, "N" ) %>%
+        dplyr::group_by( month ) %>%
+        dplyr::mutate( pi = N / sum(N ) ) %>%
+        dplyr::select( -N ) %>%
+        tidyr::pivot_wider( month, names_from = groupname, values_from = "pi",
+                            names_prefix = "pi_" )
+      
         
         # throw in group baselines and covariates as well in wide form
         ddg = dat[ c( "month", groupname, outcomename, covariates ) ]
-        ddg = tidyr::spread_( ddg, groupname, outcomename, sep="." )
+        ddg = tidyr::spread_( ddg, groupname, outcomename, sep="_" )
         names(ddg) = gsub( groupname, outcomename, names(ddg) )
         stopifnot(nrow(ddg) == nrow( dd ) )  # possibly covariates varied in spread?
 
@@ -113,19 +114,19 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 #'   as well.
 #' @param dat  Dataframe of data.  Requires an N column of total cases
 #'   represented in each row.
-#' @param pi.star The target weights.  Each month will have its groups
+#' @param pi_star The target weights.  Each month will have its groups
 #'   re-weighted to match these target weights.
 #' @param is_count Indicator of whether outcome is count data or a continuous
 #'   measure (this impacts how aggregation is done).
 #' @param covariates Covariates to be passed to aggregation (list of string
 #'   variable names).
 #' @export
-adjust_data = function( dat, outcomename, groupname, pi.star, is_count=FALSE,
+adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
                         include_aggregate = FALSE,
                         covariates = NULL ) {
 
     # add the target subgroup weights to the dataframe
-    adat = merge( dat, pi.star[ c( groupname, "pi.star" ) ], by=groupname, all.x = TRUE )
+    adat = merge( dat, pi_star[ c( groupname, "pi_star" ) ], by=groupname, all.x = TRUE )
 
     if ( is_count ) {
         adat[outcomename] = adat[[outcomename]] / adat[["N"]]
@@ -134,7 +135,7 @@ adjust_data = function( dat, outcomename, groupname, pi.star, is_count=FALSE,
     # calculate adjusted outcomes
     adj.dat = adat %>% dplyr::group_by( month ) %>%
         dplyr::summarise( #.Y = sum( N * ( !!rlang::sym( outcomename ) ) / sum(N) ),
-                   .Y.adj = sum( pi.star * !!rlang::sym( outcomename ) ),
+                   .Y.adj = sum( pi_star * !!rlang::sym( outcomename ) ),
                    N = sum( N ) )
 
     if ( is_count ) {
@@ -222,28 +223,28 @@ make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","
 
     
     ## Scenario 1b: multifacet, complex.
-    if ( FALSE ) {
-        # number of cases of each type (not impacted by policy)
-        N.drug = round( 300 - 5 * t + 2 * sin( 2 * pi * t / 12) )
-        N.violent = 30 + round( 100 - 0.1 * t + 10 * sin( 2 * pi * t / 12) )
-
-        # impact on proportion of cases with outcome
-        prop.drug = 0.6 - 0.01 * t   # baseline index (will recalculate below)
-        prop.violent = arm::invlogit( prop.drug/2 + stats::rnorm( length(t), mean=0, sd=0.15 )
-                                      + (t>t0) * pmin( 0.3*(t-t0), 1.5 ) )
-        prop.drug = arm::invlogit( -1 + prop.drug - (t>t0)* (0.15*(t-t0)) + stats::rnorm( length(t), mean=0, sd=0.15 ) )
-    }
-
-    ## Scenario 2: change in number of drug cases, but no impact on case handling within category
-    ## Nonsensical, I think.
-    if ( FALSE ) {
-        N.drug = round( 100 - 0.5 * t - (t >= t0) * ( 10 + (t-t0) * 2 ) )
-        N.violent = round( 100 - 0.1 * t + 10 * sin( 2 * pi * t / 12) )
-
-        prop.drug = 0.6 - 0.01 * t
-        prop.violent = arm::invlogit( prop.drug + 0.2 + stats::rnorm( length(t), mean=0, sd=0.15 ) )
-        prop.drug = arm::invlogit( -2 + prop.drug + stats::rnorm( length(t), mean=0, sd=0.15 ) )
-    }
+    # if ( FALSE ) {
+    #     # number of cases of each type (not impacted by policy)
+    #     N.drug = round( 300 - 5 * t + 2 * sin( 2 * pi * t / 12) )
+    #     N.violent = 30 + round( 100 - 0.1 * t + 10 * sin( 2 * pi * t / 12) )
+    # 
+    #     # impact on proportion of cases with outcome
+    #     prop.drug = 0.6 - 0.01 * t   # baseline index (will recalculate below)
+    #     prop.violent = arm::invlogit( prop.drug/2 + stats::rnorm( length(t), mean=0, sd=0.15 )
+    #                                   + (t>t0) * pmin( 0.3*(t-t0), 1.5 ) )
+    #     prop.drug = arm::invlogit( -1 + prop.drug - (t>t0)* (0.15*(t-t0)) + stats::rnorm( length(t), mean=0, sd=0.15 ) )
+    # }
+    # 
+    # ## Scenario 2: change in number of drug cases, but no impact on case handling within category
+    # ## Nonsensical, I think.
+    # if ( FALSE ) {
+    #     N.drug = round( 100 - 0.5 * t - (t >= t0) * ( 10 + (t-t0) * 2 ) )
+    #     N.violent = round( 100 - 0.1 * t + 10 * sin( 2 * pi * t / 12) )
+    # 
+    #     prop.drug = 0.6 - 0.01 * t
+    #     prop.violent = arm::invlogit( prop.drug + 0.2 + stats::rnorm( length(t), mean=0, sd=0.15 ) )
+    #     prop.drug = arm::invlogit( -2 + prop.drug + stats::rnorm( length(t), mean=0, sd=0.15 ) )
+    # }
 
 
     # bundle our subgroups
@@ -286,7 +287,7 @@ if ( FALSE ) {
 
     ss = aggregate_data( dat, "prop", "type", rich=TRUE )
     head( ss )
-    plot( ss$pi.drug )
+    plot( ss$pi_drug )
     
     sdat = aggregate_data( dat, "prop", "type", is_count=FALSE, rich = FALSE )
     sdat2 = aggregate_data( dat, "Y", "type", is_count=TRUE, rich= FALSE )

@@ -11,7 +11,7 @@ dat = make.fake.data( t.min=-40, t.max=35, t0 = t0)
 nrow( dat )
 head( dat )
 
-dat = add.lagged.covariates( dat, "Y", covariates = c("Q2","Q3","Q4","temperature" ) )
+dat = add_lagged_covariates( dat, "Y", covariates = c("Q2","Q3","Q4","temperature" ) )
 head( dat )
 
 dat.pre = filter( dat, month <= t0 )
@@ -64,7 +64,7 @@ fit.season.model = make.fit.season.model( ~ temperature + Q2 + Q3 + Q4 )
 # Repeatidly fit our model to the data and look
 rps = plyr::rdply( 50, {
   dat = make.fake.data( t.min=-5000, t.max=0, rho=0.6)
-  dat = add.lagged.covariates( dat, "Y",
+  dat = add_lagged_covariates( dat, "Y",
                                covariates = fit.season.model )
   head( dat )
   tail( dat )
@@ -92,7 +92,7 @@ qplot( rps$rho.implicit )
 if( FALSE ) {
 
   # Generate our simulated series (no smoothing)
-  predictions = process.outcome.model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=FALSE )
+  predictions = process_outcome_model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=FALSE )
   head( predictions )
 
 
@@ -131,7 +131,7 @@ if( FALSE ) {
   ##
   ## examine smoothing
   ##
-  predictions = process.outcome.model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=TRUE, full.output=TRUE)
+  predictions = process_outcome_model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=TRUE, full.output=TRUE)
   head( predictions )
 
   ggplot( predictions, aes( month, Ystar ) ) +
