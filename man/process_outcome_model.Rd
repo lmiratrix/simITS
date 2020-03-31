@@ -27,22 +27,28 @@ process_outcome_model(
 
 \item{R}{Number of simulated pre-policy extrapolations to generate.}
 
-\item{summarize}{Summarise the series}
+\item{summarize}{Summarise the series? (TRUE/FALSE)}
 
-\item{smooth}{Smooth the series}
+\item{smooth}{Smooth the series? (TRUE/FALSE)}
 
-\item{smoother}{Function to smooth residuals.  If NULL, will dynamically make
-a model smoother based on the fit_model method.}
+\item{smoother}{Function to smooth residuals, if smoothing set to TRUE.  If
+NULL, will dynamically make a model smoother based on the fit_model method
+if covariates are passed.  Otherwise it will use the simple smoother on the
+outcomes.}
 
-\item{fit_model}{The function used to fit the model to simulate from.}
+\item{fit_model}{The function used to fit the model to simulate from. (This
+model could be a seasonality model. Default is simple linear model with no
+covariates.)}
 
-\item{covariates}{Vector of covariate names used in the model function
-fit_model.}
+\item{covariates}{Vector of covariate names of all covariates used in the
+passed model function fit_model.  If null, will attempt to get list of
+covariates form the "lags" attribute of the passed 'fit_model'.}
 
-\item{plug.in}{Use the estimated parameters as fixed and do not include that
-extra uncertainty in the simulation.}
+\item{plug.in}{Use the estimated parameters as fixed and do not include extra
+uncertainty of parameter estimation in the simulation. (Not recommended as
+it destroys inference.)}
 
-\item{...}{Extra arguments to be passed to other function.}
+\item{...}{Extra arguments to be passed to `extrapolate_model()`}
 }
 \value{
 If summarize=TRUE, A dataframe with several columns of interest and
@@ -53,8 +59,16 @@ If summarize=TRUE, A dataframe with several columns of interest and
   that time point (regardless of smooth flag), `Y`, the observed outcome,
   `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
   outcome given the model with no autoregressive aspect.
+
+  If summarize=FALSE, a dataframe of all the raw series generated.
 }
 \description{
-Take a given outcome variable, and fit our model and generate the impact
-results.
+Take a given outcome variable, fit an ITS model, use it to extrapolate R
+plusible trajectories, and then using these trajectories, generate final
+impact results by averaging (if summarize is set to TRUE).
+}
+\details{
+This function is basically a wrapper for `extrapolate_model()` with some
+extra calls to `make_model_smoother()` to prepare, in the case of smoothing,
+and adding on a summary trend via `generate_Ybars()` in the case of summarizing.
 }

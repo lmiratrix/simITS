@@ -7,21 +7,30 @@ vignette: >
   %\VignetteIndexEntry{Intro simITS}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
+  editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  fig.align='center',
   comment = "#>"
 )
 library( tidyverse )
 library( simITS )
 ```
 
-The raw Mecklenberg data we will use to illustrate the simITS package.
-```{r}
+# Introduction
+This vignette quickly outlines the primary method calls for conducting an analysis of an Interrupted Time Series using the simulation approach proposed in the companion paper.
+
+We first cover a simple regression model, then show how to do smoothing, then seasonality. We also make a brief note about generating fake data for the purposes of conducting simulation studies.
+
+
+# Basic ITS analysis
+We use the raw Mecklenberg data to illustrate the simITS package.
+
+```{r, fig.align='center'}
 data(mecklenberg)
 head( mecklenberg )
 meck = mutate( mecklenberg, pbail = 100 * pbail )
@@ -36,88 +45,135 @@ ggplot( meck, aes( x=month, y=pbail)) +
   labs( title = " ", y = "Percent cases assigned bail", x = " " )
 ```
 
-We can add lagged covariates and fit our simple ITS model as so:
+To have autoregressive errors we use lagged outcomes. We can add lagged outcomes (and covariates) as so:
 ```{r}
-    meck = add_lagged_covariates( meck, outcomename = "pbail", covariates=NULL )
-    head( meck )
-    tail( meck )
-    
-    meck.pre = filter( meck, month <= 0 )    
-    mod = fit_model.default( meck.pre, "pbail" )
-    summary( mod )
+meck = add_lagged_covariates( meck, outcomename = "pbail", covariates=NULL )
+sample_n( meck, 5 ) %>% arrange( month )
 ```
 
-```{r}
-  t0 = 0
-    envelope = process_outcome_model( "pbail", meck, 
-                                      t0=t0, R = 100, 
-                                      summarize = TRUE, smooth=FALSE )
-    head( envelope )
-    tail( envelope )
+This package passes functions for fitting the model, and then uses these functions for doing the extrapolation. For the default, we use the package's `fit_model_default()` which is a simple line (with lagged outcome as a covariate):
 
-    ggplot( envelope, aes( month ) ) +
-        geom_line( aes( y=Y ), alpha = 0.6 ) +  # original data
-        geom_point( aes( y=Y ) ) +              # original data
-        #    geom_line( aes( y=Ystar1 ), alpha=0.7, col="green" ) +   # loess smoothed line
-        geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2 ) +
-        geom_line( aes( y = Ystar ), col="darkgrey" ) +
-        geom_vline( xintercept = t0+0.5)
+```{r}
+meck.pre = filter( meck, month <= 0 )    
+mod = fit_model_default( meck.pre, "pbail" )
+summary( mod )
+```
+
+To run the entire simulation and extrapolation as a call, we can directly do:
+```{r}
+t0 = 0
+envelope = process_outcome_model( "pbail", meck, 
+                                  t0=t0, R = 100, 
+                                  summarize = TRUE, smooth=FALSE )
+sample_n( envelope, 5 ) %>% arrange( month )
+```
+
+And plotting our results:
+```{r}
+ggplot( envelope, aes( month ) ) +
+  geom_line( aes( y=Y ), alpha = 0.6 ) +  # original data
+  geom_point( aes( y=Y ) ) +              # original data
+  geom_ribbon( aes( ymin=Ymin, ymax=Ymax ), alpha=0.2 ) +
+  geom_line( aes( y = Ystar ), col="darkgrey" ) +
+  geom_vline( xintercept = t0+0.5)
+```
+
+We provide a nice utility function to generate these graphs:
+```{r, eval=FALSE}
+make_envelope_graph(envelope, t0=t0)
+```
+
+# Testing and Impact Intervals
+
+We can aggregate impacts for several time points as follows.  First call `process_outcome_model()` without summarizing:
+```{r}
+predictions = process_outcome_model( "pbail", meck,
+                                     t0=t0, R = 100,
+                                     summarize = FALSE, smooth=FALSE )
+```
+
+Then use `aggregate_simulation_results()`:
+```{r}
+sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
+                                      predictions = predictions, months = 1:18 )
+
+quantile( sstat$t, c( 0.025, 0.975 ))
+sstat$t.obs
+sstat$t.obs - quantile( sstat$t, c( 0.025, 0.975 ))
 ```
 
 
-# Demo of smoothing and summarization ####
- 
+
+# Generating fake data
+
 For simulation we also offer a fake data generator.  It works like this:
 ```{r}
-  library( simITS )
-
-    dat = make_fake_data( t_min=-60, t_max=18, t0 = 0 )
-    head( dat )
-    qplot( month, Ystr, data=dat, geom = c( "point","line") )
-    qplot( month, Y, data=dat, geom = c( "point","line") )
-
-
+dat = make_fake_data( t_min=-60, t_max=18, t0 = 0 )
+qplot( month, Y, data=dat, geom = c( "point","line") )
 ```
 
-We can then process it.  Here we demonstrate summarizing and smoothing:   
-```{r}
+# Smoothing
 
-    #debugonce( process_outcome_model )
-    envelope = process_outcome_model( "Y", dat, t0=t0, R = 100, summarize = TRUE, smooth=TRUE )
-    head( envelope )
-    tail( envelope )
+Here we demonstrate summarizing and smoothing, using the fake data we just generated.
 
-    make_envelope_graph(envelope, t0 )
-
-    ggplot( dat, aes( month ) ) +
-        geom_line( aes( y=Y ), alpha = 0.6 ) +
-        geom_point( aes( y=Y ) ) +
-        geom_line( data=envelope, aes( y=Ysmooth1 ), alpha=0.7, col="green" ) +
-        geom_ribbon( data=envelope, aes( ymin=Ymin, ymax=Ymax ), alpha=0.2 ) +
-        geom_line( data=envelope, aes( y = Ysmooth ), col="darkgrey" ) +
-        geom_vline( xintercept = t0+0.5)
+```{r, fig.width=7}
+envelope = process_outcome_model( "Y", dat, t0=t0, R = 100, 
+                                  summarize = TRUE, smooth=TRUE )
+make_envelope_graph(envelope, t0 )
+```
 
 
+We can smooth to different degrees using the `smooth_k` parameter:
+```{r, fig.width=7}
+alphas = c( 6, 11, 20, 100 )
+preds = purrr::map( alphas, function( alpha ) {
+  pds = process_outcome_model( "Y", dat,
+                               t0=t0, R = 20,
+                               summarize = FALSE, smooth=TRUE,
+                               smooth_k = alpha )
+  pds
+} )
+names( preds ) = alphas
+preds = bind_rows( preds, .id="alpha_k" )
+ggplot( filter( preds, month >= t0 ), aes( month, Ysmooth ) ) +
+  facet_wrap( ~ alpha_k ) +
+  geom_line( aes( group=Run, col=alpha_k ), alpha=0.5, na.rm=TRUE) +
+  geom_line( data=dat, aes( month, Y ), col="black", alpha=0.5 ) +
+  geom_vline( xintercept=t0, col="red" ) +
+  labs( x="month", y="proportion given bail")
 ```
 
 # Seasonality and covariates
 
 A seasonality model on some fake data with a strong seasonality component is easy to fit.  You just construct some code to fit the seasonality model via the `make_fit_season_model()` factory (you need to have the covariates pre-constructed in your data):
+
 ```{r}
 data( newjersey )
-head( newjersey )
-fit.season.model.qtemp =  make_fit_season_model( ~ temperature + Q2 + Q3 + Q4 )
+fit_season_model_qtemp =  make_fit_season_model( ~ temperature + Q2 + Q3 + Q4 )
 
 envelope = process_outcome_model( "n.warrant", newjersey, t0=-7, R = 100, 
                                   summarize = TRUE, smooth=TRUE, 
-                                  fit_model = fit.season.model.qtemp )
-head( envelope )
-tail( envelope )
-
+                                  fit_model = fit_season_model_qtemp )
 make_envelope_graph( envelope, t0=-7 )
 ```
 
 Note how it will construct the lagged covariates automatically. The `make_fit_season_model()` method records what covariates are needed from the passed formula.
 
+
+## Smoothing and seasonality
+
+We can smooth around a seasonality model either with a default smoother made from the specified seasonality model (as was done above) or, like the following, with a specified one of your choice:
+
+```{r}
+smoother = make_model_smoother( fit_model = fit_season_model_sin, covariates = newjersey )
+envelope_sin = process_outcome_model( "n.warrant", newjersey, t0=-7, R = 100,
+                                  summarize = TRUE, smooth=TRUE, smoother = smoother, smooth_k = 11,
+                                  fit_model = fit_season_model_qtemp )
+envelope_sin$Ysmooth.base = envelope$Ysmooth
+envelope_sin$Ysmooth1.base = envelope$Ysmooth1
+make_envelope_graph( filter( envelope_sin, month > -30 ), t0=-7 ) +
+  geom_line( aes( y=Ysmooth.base ), col="blue", na.rm=TRUE ) +
+  geom_line( aes( y=Ysmooth1.base ), col="blue", lty=2, na.rm=TRUE )
+```
 
 

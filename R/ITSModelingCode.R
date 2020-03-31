@@ -403,7 +403,6 @@ make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 #'
 #' @param dat   The dataframe
 #' @param outcomename   The outcome of interest (string)
-#' @param model
 #' @param covariates The covariates to lag along with the outcome. This can be
 #'   either of two things.  First, it can be a list of string names.  Covariates
 #'   can also be a function with a "lags" attribute with the listed covariates
@@ -415,7 +414,6 @@ make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 #' @export
 add_lagged_covariates = function( dat,
                                   outcomename,
-                                  model = NULL,
                                   covariates = NULL ) {
   if ( !( outcomename %in% names(dat) ) ) {
     stop( sprintf( "Outcome '%s' is not a column in passed data", outcomename ) )

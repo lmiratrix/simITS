@@ -11,13 +11,15 @@ add_lagged_covariates(dat, outcomename, covariates = NULL)
 
 \item{outcomename}{The outcome of interest (string)}
 
-\item{covariates}{The covariates to lag (list of string names).  NULL if no
-covariates other than outcome should be lagged.  covariates can also be a
-function with a "lags" attribute with the listed covariates (as returned
-by, e.g., make_fit_season_model)}
+\item{covariates}{The covariates to lag along with the outcome. This can be
+either of two things.  First, it can be a list of string names.  Covariates
+can also be a function with a "lags" attribute with the listed covariates
+(as returned by, e.g., make_fit_season_model)  (which is a list of string
+names). NULL if no covariates other than outcome should be lagged.}
 }
 \value{
-Augmented dataframe
+Augmented dataframe with lagged covariates as new columns. Will
+  clobber old columns if the names (of form "lag.XXXX") conflict.
 }
 \description{
 Augment dataframe with lagged covariates

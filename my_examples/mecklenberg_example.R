@@ -72,9 +72,11 @@ summary( mod )
 mod_lagless = fit_model_default( meck.pre, "pbail", lagless = TRUE )
 summary( mod_lagless )
 
-##
-## Estimating the residual variation breakdown
-##
+
+
+
+#### Estimating the residual variation breakdown ####
+
 
 # Frac residual variation due to prior outcome: 7%
 coef( mod )
@@ -332,19 +334,28 @@ make_envelope_graph(envelope = envelope.smooth, t0 = t0,
 
 
 
-# Smoothing more vs. less
+##### Smoothing more vs. less   ######
 
-alphas = c( 7, 11, 20, 100 )
-names( alphas ) = alphas
-preds = plyr::ldply( alphas, function( alpha ) {
+pds = process_outcome_model( "pbail", meck,
+                             t0=t0, R = 20,
+                             summarize = FALSE, smooth=TRUE,
+                             smooth_k = alpha )
+pds
+
+
+
+alphas = c( 6, 11, 20, 100 )
+preds = purrr::map( alphas, function( alpha ) {
   pds = process_outcome_model( "pbail", meck,
-                                                t0=t0, R = 10,
+                                                t0=t0, R = 20,
                                                 summarize = FALSE, smooth=TRUE,
                                                 smoother = smooth_series,
                                                 smooth_k = alpha,
                                                 post.only = TRUE)
   pds
-}, .id="alpha_k" )
+} )
+names( preds ) = alphas
+preds = bind_rows( preds, .id="alpha_k" )
 
 head( preds )
 
@@ -355,6 +366,8 @@ ggplot( filter( preds, month >= t0 ), aes( month, Ysmooth ) ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail")
+
+
 
 
 # Looking at smoothing
