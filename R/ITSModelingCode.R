@@ -3,92 +3,6 @@
 SMOOTH_K = 11
 
 
-#' Default ITS model
-#'
-#' This fits the model outcomename ~ lag.outcome + month, with no
-#' covariates.
-#'
-#' @param dat Dataframe of pre-policy data to fit model to.  Needs a "month" column
-#' @param outcomename Outcome of interest
-#' @param lagless Boolean, include the lagged outcome, or not?
-#' @param ... Extra arguments passed to the lm() call.
-
-#' @export
-
-fit_model.default = function( dat, outcomename, lagless = FALSE, ... ) {
-  monthname = "month"
-
-  if ( lagless ) {
-    form = paste0( outcomename, " ~ ", monthname )
-  } else {
-    form = paste0( outcomename, " ~ ", monthname, " + lag.outcome" )
-  }
-
-  M0 = stats::lm( stats::as.formula( form ), data=dat[-c(1),], ... )
-  M0
-}
-
-#' Make a fit_model that takes a seasonality component
-#'
-#' This method returns a function that will fit a model both with and without
-#' lagged outcomes.
-#'
-#' You hand it a formula object specifying the seasonality, e.g., " ~ Q2 + Q3 +
-#' Q4", if you have quarterly season effects. This method assumes you want
-#' models with a linear month component as well, and will add that and an
-#' intercept in automatically.
-#'
-#' @param formula Formula specifying seasonality.  No outcome or month needed.
-#' @param no.lag Formula specifying additional variables to not lag (usually used due
-#'   to colinearity of lagged outcomes, such as with a sin and cos component).
-#' @return A function that takes dat, outcomename, and a lagless flag (see,
-#'   e.g., fit_model.default)
-#' @export
-make_fit_season_model = function( formula, no.lag = NULL ) {
-
-  stopifnot( attr( stats::terms( formula ), "response" ) == 0 )
-
-  formula = stats::update.formula( formula, ~ . - month )
-
-  vrs = all.vars( formula )
-
-  # add in the no lag elements
-  if ( !is.null( no.lag ) ) {
-    stopifnot( attr( stats::terms( no.lag ), "response" ) == 0 )
-
-    vrno = all.vars( no.lag )
-    vrno = paste0( vrno, collapse = " + " )
-    formula = stats::update.formula( formula, paste0( "~ . + ", vrno ) )
-  }
-
-  if ( length( vrs ) > 0 ) {
-    vrs
-    lgs = paste0( "lag.", vrs, collapse = " + " )
-    lgs
-    lag.form = stats::update.formula( formula, paste0( "~ . + lag.outcome + ", lgs ) )
-  } else {
-    lag.form = stats::update.formula( formula, "~ . + lag.outcome" )
-  }
-
-  fnct = function( dat, outcomename, lagless = FALSE, ... ) {
-    if ( lagless ) {
-      the.formula = formula
-    } else {
-      the.formula = lag.form
-    }
-    the.formula = stats::update( the.formula, stats::as.formula( paste0( outcomename, " ~ 1 + month + ." ) ) )
-
-    M0 = stats::lm( the.formula, data=dat[-c(1), ], ...)
-    M0
-  }
-  attr( fnct, "lags" ) = vrs
-  attr( fnct, "formula" ) = formula
-  attr( fnct, "lag.formula" ) = lag.form
-
-  fnct
-}
-
-
 
 
 #' Generate the model predictions for a series, ignoring lagged components.
@@ -325,7 +239,7 @@ smooth_series = function( res, outcomename, t0,
 smooth_residuals = function( res, t0, outcomename,
                              post.only = TRUE,
                              smooth_k = SMOOTH_K,
-                             fit_model = fit_model.default,
+                             fit_model = fit_model_default,
                              covariates,
                              full.output = FALSE ) {
     stopifnot( nrow( res ) == nrow( covariates ) )
@@ -429,7 +343,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
     # creates expotential blow-up in our series.
     if( mean( coefs[,"lag.outcome"] > 1.0 ) > 0.01 ) {
         warning( sprintf( "Substantial estimated coefficients (%.1f percent) for lagged outcome are greater than 1 which will give substantial instability.",
-                          100*mean( coefs$beta1 > 1.0 )  ) )
+                          100*mean( mean( coefs[,"lag.outcome"] > 1.0 )  ) ) )
     }
     coefs = as.data.frame( coefs )
 
@@ -473,7 +387,7 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 #' @inheritParams make_many_predictions
 #' @return data.frame with the collection of predicted series
 #' @export
-make_many_predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
+make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 
   # Repeatidly generate a predictive series.
   res = plyr::rdply( R, generate_prediction_sequence( stats::coef( fit0 ), stats::sigma( fit0 ),
@@ -489,15 +403,19 @@ make_many_predictions.plug = function( fit0, dat, R, outcomename, t0 ) {
 #'
 #' @param dat   The dataframe
 #' @param outcomename   The outcome of interest (string)
-#' @param covariates The covariates to lag (list of string names).  NULL if no
-#'   covariates other than outcome should be lagged.  covariates can also be a
-#'   function with a "lags" attribute with the listed covariates (as returned
-#'   by, e.g., make_fit_season_model)
+#' @param model
+#' @param covariates The covariates to lag along with the outcome. This can be
+#'   either of two things.  First, it can be a list of string names.  Covariates
+#'   can also be a function with a "lags" attribute with the listed covariates
+#'   (as returned by, e.g., make_fit_season_model)  (which is a list of string
+#'   names). NULL if no covariates other than outcome should be lagged.
 #'
-#' @return Augmented dataframe
+#' @return Augmented dataframe with lagged covariates as new columns. Will
+#'   clobber old columns if the names (of form "lag.XXXX") conflict.
 #' @export
 add_lagged_covariates = function( dat,
                                   outcomename,
+                                  model = NULL,
                                   covariates = NULL ) {
   if ( !( outcomename %in% names(dat) ) ) {
     stop( sprintf( "Outcome '%s' is not a column in passed data", outcomename ) )
@@ -510,10 +428,12 @@ add_lagged_covariates = function( dat,
     if ( !is.null( attr( covariates, "lags" ) ) ) {
       covariates = attr( covariates, "lags" )
     }
-
+  }
+  
+  if( !is.null( covariates ) ) {
     lc = paste0( "lag.", covariates )
     for ( i in seq_along( covariates ) ) {
-      dat[ lc[[i]] ] = stats::lag( dat[[ covariates[i] ]] )
+      dat[ lc[[i]] ] = dplyr::lag( dat[[ covariates[i] ]] )
     }
   }
 
@@ -521,60 +441,6 @@ add_lagged_covariates = function( dat,
 }
 
 
-
-
-
-#' @title Summary function for summarize.simulation.results
-#' @description Given a set of simulation runs, estimate average impact over range of months
-#' @param res Dataframe of a single series (simulated or otherwise)
-#' @param outcomename Name of outcome in res
-#' @param months Which months to average over, Default: 1:18
-#' @param ... Other parameters (ignored)
-#' @return Single number (in this case mean of given months)
-#' @importFrom utils data
-#' @examples 
-#' data( mecklenberg )
-#' calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
-#' @rdname calculate_average_outcome
-#' @export
-#'
-calculate_average_outcome = function( res, outcomename,
-                                      months = 1:54,
-                                      ... ) {
-
-  mts = dplyr::filter( res, month %in% months )
-  mean( mts[[outcomename]] )
-}
-
-
-
-#' @title Test a passed test statistic on the simulated data
-#' @description This method is used to look at summary statistics such as
-#'   average impact post-policy, and see how the predictive distribution
-#'   compares to the observed.
-#'
-#' @param orig.data The raw data (dataframe)
-#' @param predictions The results from process_outcome_model.
-#' @param outcomename Outcome to use.
-#' @param summarizer A function to calculate some summary quantity, Default:
-#'   calculate_average_outcome
-#' @param ... Extra arguments passed to the summarizer function.
-#' 
-#' @return List of the test statistic and reference distribution.
-#'
-#' @export
-aggregate_simulation_results = function( orig.data, predictions,
-                                         outcomename,
-                                         summarizer = calculate_average_outcome, ... ) {
-  summary = predictions %>%
-    tidyr::nest( data = c(month, Ybar, Ystar, Ysmooth) ) %>%
-    dplyr::mutate( t = purrr::map( data, summarizer, outcomename = "Ystar", ... ) )  %>%
-                 tidyr::unnest( t )
-
-  sum.obs = summarizer( orig.data, outcomename = outcomename, ... )
-
-  list( t.obs = sum.obs, t = summary$t )
-}
 
 
 
@@ -610,7 +476,7 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
   # require( tidyverse )
 
   if ( fix.params ) {
-    predictions = make_many_predictions.plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
+    predictions = make_many_predictions_plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
   } else {
     predictions = make_many_predictions( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
   }
@@ -669,140 +535,6 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
     predictions
   }
 }
-
-
-drop.extra.covariates = function( M0, data  ) {
-
-  cfs = stats::coef( M0 )
-  nas = names( cfs )[ is.na( cfs ) ]
-
-  if ( length( nas ) > 0 ) {
-
-    nas = paste0( nas, collapse = " - " )
-
-    warning( paste0( "Dropped covariates due to colinearity with update of: ~ . - ", nas ) )
-
-    stats::update( M0, formula. = stats::as.formula( paste( "~ . ", nas, sep= "-"  ) ), data=data )
-  } else {
-    # No need to take action
-    M0
-  }
-}
-
-
-
-
-#' Generate an ITS extrapolation simulation.
-#'
-#' Take a given outcome variable, and fit our model and generate the impact
-#' results.
-#'
-#' @param outcomename  Name of column in dat containing the time series.
-#' @param dat Dataframe with a 'month' column for time.
-#' @param t0 Last pre-policy timepoint
-#' @param R Number of simulated pre-policy extrapolations to generate.
-#' @param summarize Summarise the series
-#' @param smooth Smooth the series
-#' @param smoother Function to smooth residuals.  If NULL, will dynamically make
-#'   a model smoother based on the fit_model method.
-#' @param fit_model The function used to fit the model to simulate from.
-#' @param covariates Vector of covariate names used in the model function
-#'   fit_model.
-#' @param plug.in Use the estimated parameters as fixed and do not include that
-#'   extra uncertainty in the simulation.
-#' @param ... Extra arguments to be passed to other function.
-#' @return If summarize=TRUE, A dataframe with several columns of interest and
-#'   one row per month of data. The columns are Ymin and Ymax, the limits of the
-#'   envelope, 'range', the range of the envelope, 'SE', the standard deviation
-#'   of the trajectories at that time point, `Ysmooth` the median smoothed value
-#'   at that time point (if smoothing), `Ystar` the median unsmoothed value at
-#'   that time point (regardless of smooth flag), `Y`, the observed outcome,
-#'   `Ysmooth1`, the smoothed observed outcomes, and `Ybar` the predicted
-#'   outcome given the model with no autoregressive aspect.
-#' @export
-process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
-                                  smooth=FALSE, smoother = NULL,
-                                  fit_model = fit_model.default,
-                                  covariates = NULL,
-                                  plug.in = FALSE, ... ) {
-
-    if ( is.null( covariates ) ) {
-      covariates = attr( fit_model, "lags" )
-    }
-
-    dat = add_lagged_covariates( dat, outcomename, covariates = covariates  )
-
-    # the dat[-c(1), ] is to drop the first observation due to the lagging issue
-    #dat=dat[-c(1),]
-
-    dat.pre = dplyr::filter( dat, month <= t0 )
-
-    M0 = fit_model( dat.pre, outcomename )
-
-    if ( any( is.na( stats::coef( M0 ) ) ) ) {
-        M0 = drop.extra.covariates( M0, dat.pre[-c(1),] )
-    }
-
-    # Generate the smoother function to pass to extrapolate_model
-    if ( smooth && is.null( smoother ) ) {
-      M0full = stats::model.frame( M0, data=dat, na.action=NULL )
-      smoother = make_model_smoother( covariates=M0full, fit_model = fit_model )
-    }
-
-    res = extrapolate_model( M0, outcomename, dat, t0, R, summarize=summarize, smooth=smooth,
-                       smoother=smoother, fix.params = plug.in )
-
-    if ( summarize ) {
-      res$Ybar = generate_Ybars( fit_model, outcomename, t0, dat )
-    }
-
-    res
-}
-
-
-
-
-#' Make envelope style graph with associated smoothed trendlines
-#'
-#' @param envelope The result of a process_outcome_model call, i.e. dataframe
-#'   with columns of original data, imputed data and, potentially, smoothed
-#'   data.
-#' @param t0  Last pre-policy timepoint.
-#' @param ylab Y label of plot
-#' @param xlab X label of plot
-#'
-#' @export
-make_envelope_graph = function( envelope, t0, ylab = "Y", xlab="month" ) {
-
-  has.smooth = ( "Ysmooth" %in% names(envelope) ) && (any( !is.na( envelope$Ysmooth ) ) )
-
-    # get last pre-policy timepoint
-    Y.init = dplyr::filter( envelope, month == t0 )$Y
-
-    #ft = dplyr::filter( envelope, month == t0+1 )
-    #ft$month = ft$month - 0.5
-    #ft$Ysmooth = ft$Ysmooth1 = ft$Y = NA
-    #envelope = dplyr::bind_rows( envelope, ft )
-    t0mo = which( envelope$month == t0 )
-    envelope$Ysmooth[t0mo] =  envelope$Ymin[t0mo] =  envelope$Ymax[t0mo] =  envelope$Y[t0mo]
-
-    plt = ggplot2::ggplot( envelope, ggplot2::aes( envelope$month ) ) +
-        ggplot2::geom_line( ggplot2::aes( y= envelope$Y ), alpha = 0.6 ) + ggplot2::geom_point( ggplot2::aes( y=envelope$Y ) ) +
-        ggplot2::geom_vline( xintercept=t0, col="red" ) +
-        ggplot2::geom_point( x=t0, y=Y.init, col="red" ) +
-       ggplot2:: geom_ribbon( ggplot2::aes( ymin=envelope$Ymin, ymax=envelope$Ymax ), alpha=0.2, fill="green", na.rm=TRUE ) +
-        ggplot2::labs( ylab=ylab, xlab=xlab )
-
-    if ( has.smooth ) {
-      plt = plt + ggplot2::geom_line( ggplot2::aes( y=envelope$Ysmooth ), alpha=0.7, color="green", na.rm=TRUE ) +
-        ggplot2::geom_line( ggplot2::aes( y=envelope$Ysmooth1 ), color = "red", na.rm=TRUE )
-    } else {
-      plt = plt + ggplot2::geom_line( data=dplyr::filter( envelope, month >= t0 ), ggplot2::aes( y=envelope$Ystar ) )
-    }
-
-    plt
-}
-
 
 
 

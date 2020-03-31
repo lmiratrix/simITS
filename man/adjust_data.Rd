@@ -8,7 +8,7 @@ adjust_data(
   dat,
   outcomename,
   groupname,
-  pi.star,
+  pi_star,
   is_count = FALSE,
   include_aggregate = FALSE,
   covariates = NULL
@@ -23,7 +23,7 @@ values for.}
 
 \item{groupname}{Name of categorical covariate that determines the groups.}
 
-\item{pi.star}{The target weights.  Each month will have its groups
+\item{pi_star}{The target weights.  Each month will have its groups
 re-weighted to match these target weights.}
 
 \item{is_count}{Indicator of whether outcome is count data or a continuous

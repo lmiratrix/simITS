@@ -21,6 +21,7 @@ FIG_HEIGHT = 2.8
 
 # Number of iterations for simulations
 R = 10000
+R = 10
 
 # When pre-policy ends
 t0 = 0
@@ -28,7 +29,7 @@ t0 = 0
 
 meck = mutate( mecklenberg, pbail = 100 * pbail )
 
-meck = add.lagged.covariates( meck, outcomename = "pbail", covariates=NULL )
+meck = add_lagged_covariates( meck, outcomename = "pbail", covariates=NULL )
 head( meck )
 tail( meck )
 
@@ -64,12 +65,12 @@ ggsave( paste0( "my_examples/plots/mech_bail_data.", file_format ),
 
 # With lag outcome
 meck.pre = filter( meck, month <= 0 )
-mod = fit.model.default( meck.pre, "pbail" )
+mod = fit_model_default( meck.pre, "pbail" )
 summary( mod )
 
 # Drop lag (i.e., fit a line to pre-policy data)
-mod.lagless = fit.model.default( meck.pre, "pbail", lagless = TRUE )
-summary( mod.lagless )
+mod_lagless = fit_model_default( meck.pre, "pbail", lagless = TRUE )
+summary( mod_lagless )
 
 ##
 ## Estimating the residual variation breakdown
@@ -84,7 +85,7 @@ coef( mod )["lag.outcome"]^2
 filter( meck, month == t0 )
 
 meck.pre$Yhat = predict( mod, newdata=meck.pre )
-meck.pre$Yhat.lagless = predict( mod.lagless, newdata=meck.pre )
+meck.pre$Yhat.lagless = predict( mod_lagless, newdata=meck.pre )
 
 
 # Our predicted line (fully structural and using the lags to help predict)
@@ -100,7 +101,7 @@ ggplot( meck.pre, aes( month, pbail ) ) +
 # Visual investigation on whether Meck has autoregressive structure (well, actually it does not appear to have such structure )
 mod0 = lm( pbail ~ 1 + month, data=meck.pre )
 mod0
-mod.lagless
+mod_lagless
 
 # look at autocorrealtion plots
 acf( meck.pre$pbail)
@@ -120,7 +121,7 @@ ggplot( mm, aes( month, Y ) ) +
 
 
 # Perm test for how often crosses 0 line
-count.crosses = function( Y ) {
+count_crosses = function( Y ) {
   Y = sign( Y )
   n = length(Y)
   sum( Y[1:(n-1)] != Y[2:n] )
@@ -128,10 +129,10 @@ count.crosses = function( Y ) {
 
 mm %>% filter( outcome %in% c("resid", "synth.resid" ) ) %>%
   group_by( outcome ) %>%
-  summarise( crosses = count.crosses( Y ) )
+  summarise( crosses = count_crosses( Y ) )
 
 rps = replicate( 100, {
-  count.crosses( sample( resid(mod0) ) )
+  count_crosses( sample( resid(mod0) ) )
 })
 table( rps )
 
@@ -143,7 +144,7 @@ mean( rps <= 13 )
 #### Series of demonstration plots of the simulation process  ####
 
 set.seed( 1234 )
-predictions = process.outcome.model( "pbail", meck,
+predictions = process_outcome_model( "pbail", meck,
                                   t0=t0, R = 10,
                                   summarize = FALSE, smooth=FALSE,
                                   plug.in = TRUE)
@@ -207,13 +208,13 @@ ggsave( "my_examples/plots/build_out_finished.pdf", width = FIG_WIDTH, height = 
 ##### Generate our simulated series (no smoothing)  #####
 
 # Make the envelope from 10,000 trials (incorporating model uncertainty)
-envelope = process.outcome.model( "pbail", meck,
+envelope = process_outcome_model( "pbail", meck,
                                      t0=t0, R = R,
                                      summarize = TRUE, smooth=FALSE )
 
 
 # The envelope from 10,000 trials WITHOUT uncertainty.  (This one is WRONG!)
-envelope.plug = process.outcome.model( "pbail", meck,
+envelope.plug = process_outcome_model( "pbail", meck,
                                        t0=t0, R = R,
                                        summarize = TRUE, smooth=FALSE,
                                        plug.in = TRUE )
@@ -229,9 +230,10 @@ Y.init = filter( envelope, month == t0 )$Y
 # Add in pre-policy data for making nice graph
 head( envelope.plug )
 envelope.plug2 = merge( envelope.plug, meck.pre[c("month","Yhat")], by="month", all.x=TRUE )
+head( envelope.plug2 )
 
 # Envelope from plug (too narrow)
-make.envelope.graph(envelope = envelope.plug2, t0 = t0) +
+make_envelope_graph(envelope = envelope.plug2, t0 = t0) +
   labs( x="month", y="proportion given bail") +
   geom_line( aes(y=Ystar ) )
 
@@ -239,7 +241,7 @@ ggsave( "my_examples/plots/build_out_envelope_plug.pdf", width = FIG_WIDTH, heig
 
 
 # Corrected envelope with uncertainty
-make.envelope.graph(envelope = envelope, t0 = t0) +
+make_envelope_graph(envelope = envelope, t0 = t0) +
   labs( x="month", y="proportion given bail") +
   geom_line( aes(y=Ystar ) ) +
   coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
@@ -276,10 +278,10 @@ ggsave( paste0( "my_examples/plots/envelope_plug_in_vs_not.", file_format ),
 
 MY_SMOOTH = 20
 
-predictions.smooth = process.outcome.model( "pbail", meck,
+predictions.smooth = process_outcome_model( "pbail", meck,
                                          t0=t0, R = 10,
                                          summarize = FALSE, smooth=TRUE, smooth_k = MY_SMOOTH,
-                                         smoother = smooth.series,
+                                         smoother = smooth_series,
                                          post.only = TRUE)
 head( predictions.smooth )
 ggplot( filter( predictions.smooth, month >= t0 ), aes( month, Ysmooth ) ) +
@@ -294,10 +296,10 @@ ggsave( "my_examples/plots/ten_smooth_trajectories.pdf",
 
 
 # The envelope from R trials using smoothing
-envelope.smooth = process.outcome.model( "pbail", meck,
+envelope.smooth = process_outcome_model( "pbail", meck,
                                   t0=t0, R = R,
                                   summarize = TRUE, smooth=TRUE, smooth_k = MY_SMOOTH,
-                                  smoother = smooth.series,
+                                  smoother = smooth_series,
                                   post.only=TRUE )
 
 nrow( envelope.smooth )
@@ -325,7 +327,7 @@ ggsave( "my_examples/plots/build_out_envelope_smooth_with_old.pdf",
 
 
 # Demo of using the utility function for making these graphs.
-make.envelope.graph(envelope = envelope.smooth, t0 = t0,
+make_envelope_graph(envelope = envelope.smooth, t0 = t0,
                      xlab="month", ylab="proportion given bail" )
 
 
@@ -335,10 +337,10 @@ make.envelope.graph(envelope = envelope.smooth, t0 = t0,
 alphas = c( 7, 11, 20, 100 )
 names( alphas ) = alphas
 preds = plyr::ldply( alphas, function( alpha ) {
-  pds = process.outcome.model( "pbail", meck,
+  pds = process_outcome_model( "pbail", meck,
                                                 t0=t0, R = 10,
                                                 summarize = FALSE, smooth=TRUE,
-                                                smoother = smooth.series,
+                                                smoother = smooth_series,
                                                 smooth_k = alpha,
                                                 post.only = TRUE)
   pds
@@ -357,10 +359,10 @@ ggplot( filter( preds, month >= t0 ), aes( month, Ysmooth ) ) +
 
 # Looking at smoothing
 if ( FALSE ) {
-  M0 = fit.season.model.qtemp( newjersey, "Y" )
+  M0 = fit_season_model_qtemp( newjersey, "Y" )
   M0full = model.frame( M0, data=newjersey, na.action=NULL )
   
-  smoother = simITS:::make.model.smoother(fit.model = fit.season.model.qtemp, covariates=M0full )
+  smoother = simITS:::make_model_smoother(fit.model = fit_season_model_qtemp, covariates=M0full )
   newjersey$sm1 = smoother( newjersey, t0=t0, "Y", smooth_k = 25 )
   newjersey$sm2 = smoother( newjersey, t0=t0, "Y", smooth_k = 11 )
   gg = newjersey %>% dplyr::select( month, sm1, sm2, Y ) %>%
@@ -377,7 +379,7 @@ if ( FALSE ) {
 
 ###### Calculating and testing average impact  #######
 
-predictions = process.outcome.model( "pbail", meck,
+predictions = process_outcome_model( "pbail", meck,
                                             t0=t0, R = R,
                                             summarize = FALSE, smooth=FALSE )
 

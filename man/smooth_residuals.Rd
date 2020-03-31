@@ -10,7 +10,7 @@ smooth_residuals(
   outcomename,
   post.only = TRUE,
   smooth_k = SMOOTH_K,
-  fit_model = fit_model.default,
+  fit_model = fit_model_default,
   covariates,
   full.output = FALSE
 )

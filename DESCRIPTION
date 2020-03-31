@@ -7,14 +7,15 @@ Maintainer: Luke Miratrix <lmiratrix@g.harvard.edu>
 Description: Uses simulation to create prediction intervals for post-policy outcomes in Interrupted Time Series (ITS) designs.
     This work partially supported by the Arnold Foundation in collaboration with MDRC.
 Depends: R (>= 2.10), dplyr, rlang
-License: GPL-3 + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Suggests: knitr,
+Suggests: 
+    knitr,
     nlme,
     survival,
     boot,
-    testthat,
+    testthat (>= 2.1.0),
     tidyverse,
     stats,
     cluster,

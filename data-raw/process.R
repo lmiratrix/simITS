@@ -21,6 +21,10 @@ nrow( meck2 )
 summary( meck2 )
 table( meck2$Severity, useNA= "always" )
 
+
+
+#### Make Mechlenberg subgroup data  ####
+
 meck2.l = meck2 %>% filter( !is.na( Bail ), !is.na( Severity ) ) %>%
   group_by( month, Severity ) %>%
   summarise( n.cases = n(),
@@ -39,26 +43,26 @@ meck2.l$Severity = NULL
 
 if ( FALSE ) {
   meck2 = read_csv( "data-raw/PSADataforExample190212.csv")
-head( meck2 )
-
-
-pbails = grep( "pbail.", names( meck2 ) )
-ns = 3:5
-pbails
-ns
-times = gsub( "pbail.", "", names( meck2 )[pbails] )
-times
-
-meck2.l = reshape( as.data.frame( meck2 ),  idvar=c("month"),
-                varying=list( ns, pbails ),
-                timevar = "category",
-                times = times,
-                v.names=c("n","pbail"), direction="long")
-
-
-meck2.l = mutate( meck2.l, nbail = round( pbail * n.cases ),
-                  pbail = pbail * n.cases / n )
-head( meck2.l )
+  head( meck2 )
+  
+  
+  pbails = grep( "pbail.", names( meck2 ) )
+  ns = 3:5
+  pbails
+  ns
+  times = gsub( "pbail.", "", names( meck2 )[pbails] )
+  times
+  
+  meck2.l = reshape( as.data.frame( meck2 ),  idvar=c("month"),
+                     varying=list( ns, pbails ),
+                     timevar = "category",
+                     times = times,
+                     v.names=c("n","pbail"), direction="long")
+  
+  
+  meck2.l = mutate( meck2.l, nbail = round( pbail * n.cases ),
+                    pbail = pbail * n.cases / n )
+  head( meck2.l )
 }
 
 
@@ -92,12 +96,12 @@ if ( FALSE ) {
   
   ggplot( meck.l, aes( month, pbail, col=group ) ) +
     geom_line()
-
+  
   ggplot( meck.n, aes( month, n, col=group ) ) +
     geom_line()
   
   m2 = mutate( meck, ncases2 = n.felony + n.misdem + n.traffic,
-                 pbail2 = (n.felony * pbail.felony + n.traffic * pbail.traffic + n.misdem * pbail.misdem) / n.cases )
+               pbail2 = (n.felony * pbail.felony + n.traffic * pbail.traffic + n.misdem * pbail.misdem) / n.cases )
   
   summary( m2$ncases - m2$ncases2 )
   
@@ -106,7 +110,7 @@ if ( FALSE ) {
 }
 
 
-#### Make New Jersey (fake) data #####
+#### Make New Jersey data #####
 
 if ( TRUE ) {
   nj = read_csv("data-raw/njbymonth.csv" )
@@ -121,7 +125,7 @@ if ( TRUE ) {
                n = comptot.cs,
                sin.m = tsin1,
                cos.m = tcos1
-               )
+  )
   nj = mutate( nj, n.warrant = round( n.warrant ),
                n.summons = round( n.summons ) )
   nj$n = nj$n.warrant + nj$n.summons 
@@ -131,29 +135,29 @@ if ( TRUE ) {
 }
 
 
-# Make a new new jersey
+# Make a new (fake) new jersey -- used before data permissions were given
 if ( FALSE ) {
   
-set.seed( 1019 )
-library( simITS )
-njf = make.fake.data( t.min= -7*12, t.max = 18, t0 = 0, rho = 0.4, sd.omega = 4,
-                     coef.q = c( 9, 5, -12, 0 ),
-                     coef.temp = 0.20,
-                     coef.tx = c( 8, 0.25, -1 ) )
-head( njf )
-njf = mutate( njf, Y = round( Y * 50 ),
-             Ystr = Ystr * 50,
-             Ystr0 = Ystr0 * 50 )
-ggplot( data=njf, aes( month, Y ) ) +
-  geom_line() +
-  geom_line( aes( y = Ystr ), col="green" ) +
-  geom_line( aes( y = Ystr0 ), col="blue" ) +
-  geom_vline( xintercept = 0.5 )
-njf$Ystr = NULL
-
-# make the real the fake
-nj = njf
-
+  set.seed( 1019 )
+  library( simITS )
+  njf = make.fake.data( t.min= -7*12, t.max = 18, t0 = 0, rho = 0.4, sd.omega = 4,
+                        coef.q = c( 9, 5, -12, 0 ),
+                        coef.temp = 0.20,
+                        coef.tx = c( 8, 0.25, -1 ) )
+  head( njf )
+  njf = mutate( njf, Y = round( Y * 50 ),
+                Ystr = Ystr * 50,
+                Ystr0 = Ystr0 * 50 )
+  ggplot( data=njf, aes( month, Y ) ) +
+    geom_line() +
+    geom_line( aes( y = Ystr ), col="green" ) +
+    geom_line( aes( y = Ystr0 ), col="blue" ) +
+    geom_vline( xintercept = 0.5 )
+  njf$Ystr = NULL
+  
+  # make the real the fake
+  nj = njf
+  
 }
 
 

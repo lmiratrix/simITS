@@ -65,3 +65,8 @@ test_that("Smoothing with post.only=TRUE gives post smoothed only", {
   expect_true( nrow( preds ) == nrow( mecklenberg ) )
 
 })
+
+
+
+
+

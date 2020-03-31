@@ -5,3 +5,5 @@
 ^data-raw$
 ^my_examples$
 ^00check.log$
+^LICENSE\.md$
+Rplots.pdf

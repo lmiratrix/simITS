@@ -11,6 +11,7 @@ library( tidyverse )
 library( simITS )
 
 R = 1000
+R = 10
 
 # Make plots look right to me.
 library( ggthemes )
@@ -29,7 +30,7 @@ meck = rename( meck, N = n.cases )
 t0 = 0
 tmax = max( meck$month )
 
-pis = calculate.group.weights( "category", meck, t0, tmax )
+pis = calculate_group_weights( "category", meck, t0, tmax )
 pis
 
 
@@ -48,28 +49,32 @@ ggsave( "my_examples/plots/meck_changing_count.pdf", width=5, height=3.75 )
 ## The proportion as outcome
 ##
 
-adjdat = adjust.data( meck, "pbail", "category", pis, include.aggregate=TRUE )
+adjdat = adjust_data( meck, "pbail", "category", pis, include_aggregate=TRUE )
 head( adjdat )
 
 # Looking at changing shares across time
 aa = adjdat %>% dplyr::select( month, starts_with( "pi" )) %>%
-  gather( pi.felony, pi.misdem, pi.traffic, key="category", value="proportion" )
+  gather( pi_felony, pi_misdem, pi_traffic, key="category", value="proportion" )
 head( aa )
 ggplot( aa, aes( month, proportion, col=category ) ) +
   geom_point() + geom_line()
 ggsave( "my_examples/plots/meck_changing_prop.pdf", width=5, height=3.75 )
 
 # Modeling adjusted and not
-envelope.adj = process.outcome.model( "pbail.adj", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
+envelope.adj = process_outcome_model( "pbail.adj", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
 
-envelope = process.outcome.model( "pbail", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
+envelope = process_outcome_model( "pbail", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
 
 head( adjdat )
-envelope.felony = process.outcome.model( "pbail.felony", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
-envelope.misdem = process.outcome.model( "pbail.misdem", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
-envelope.traffic = process.outcome.model( "pbail.traffic", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
+envelope.felony = process_outcome_model( "pbail_felony", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
+envelope.misdem = process_outcome_model( "pbail_misdem", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
+envelope.traffic = process_outcome_model( "pbail_traffic", adjdat, t0=t0, R = R, summarize = TRUE, smooth=FALSE )
 
-env = bind_rows( raw=envelope, adjusted=envelope.adj, felony=envelope.felony, misdem=envelope.misdem, traffic = envelope.traffic, .id="model")
+env = bind_rows( raw=envelope, 
+                 adjusted=envelope.adj, 
+                 felony=envelope.felony, 
+                 misdem=envelope.misdem, 
+                 traffic = envelope.traffic, .id="model")
 head( env )
 plt <- ggplot( env, aes( month, col=model ) ) +
   geom_line( aes(y=Ystar), lty=2 ) +
@@ -100,7 +105,7 @@ ggsave( "my_examples/plots/meck_adjusted.pdf", width=5, height=3.5 )
 ##
 
 head( meck )
-adjdat = adjust.data( meck, "n.bail", "category", pis, include.aggregate = TRUE, is.count = TRUE )
+adjdat = adjust_data( meck, "n.bail", "category", pis, include_aggregate = TRUE, is_count = TRUE )
 head( adjdat )
 
 
@@ -131,15 +136,17 @@ ggplot( aa, aes( x=month, y=n.bail, col=category ) ) +
   geom_line() + geom_point()
 
 # Modeling adjusted and not
-envelope.adj = process.outcome.model( "n.bail.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+envelope.adj = process_outcome_model( "n.bail.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-envelope = process.outcome.model( "n.bail", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+envelope = process_outcome_model( "n.bail", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-envelope.misdem = process.outcome.model( "n.bail.misdem", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
-envelope.felony = process.outcome.model( "n.bail.felony", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
-envelope.traffic = process.outcome.model( "n.bail.traffic", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+head( adjdat )
+envelope.misdem = process_outcome_model( "n.bail_misdem", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+envelope.felony = process_outcome_model( "n.bail_felony", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
+envelope.traffic = process_outcome_model( "n.bail_traffic", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
 
-env = bind_rows( raw=envelope, adjusted=envelope.adj, felony=envelope.felony, misdem=envelope.misdem, traffic=envelope.traffic, .id="model")
+env = bind_rows( raw=envelope, adjusted=envelope.adj, felony=envelope.felony, 
+                 misdem=envelope.misdem, traffic=envelope.traffic, .id="model")
 head( env )
 
 plt <- ggplot( env, aes( month, col=model ) ) +
