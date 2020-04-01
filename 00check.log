@@ -10,9 +10,6 @@
 Maintainer: ‘Luke Miratrix <lmiratrix@g.harvard.edu>’
 
 New submission
-
-License components with restrictions and base license permitting such:
-  GPL-3 + file LICENSE
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -27,8 +24,7 @@ License components with restrictions and base license permitting such:
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking ‘build’ directory ... OK
-* checking DESCRIPTION meta-information ... WARNING
-Invalid license file pointers: LICENSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -69,4 +65,4 @@ Invalid license file pointers: LICENSE
 * checking re-building of vignette outputs ... OK
 * checking PDF version of manual ... OK
 * DONE
-Status: 1 WARNING, 1 NOTE
+Status: 1 NOTE
