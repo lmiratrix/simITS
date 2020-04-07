@@ -3,7 +3,7 @@
 \docType{data}
 \name{mecklenberg}
 \alias{mecklenberg}
-\title{Mechlenberg PSA Reform Data}
+\title{Mecklenberg PSA Reform Data}
 \format{
 A data frame with 54 rows and 10 variables:
 \describe{
@@ -23,6 +23,6 @@ A data frame with 54 rows and 10 variables:
 mecklenberg
 }
 \description{
-Monthly aggregate outcomes of various measures of interest from Mechlenberg. See MDRC Report.
+Monthly aggregate outcomes of various measures of interest from Mecklenberg. See MDRC Report.
 }
 \keyword{datasets}

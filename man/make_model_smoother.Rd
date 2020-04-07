@@ -15,7 +15,8 @@ covariates.}
 defined by fit_model.}
 }
 \value{
-a smoother function that can be passed to the smoothing routines.
+A smoother function that can be passed to the smoothing routines.
+  This function is of the form listed above.
 }
 \description{
 This helper function gives back a function that takes the resulting
@@ -26,4 +27,8 @@ simulation data from a single iteration of the simulation, and fits
 \details{
 This can be used to build smoothers that smooth using models other than the
 model being used for extrapolation (e.g., a model without temperature).
+
+Resulting functions have the following parameters: `res` (the data), `t0`
+(start time), `outcomename`, `post.only` flag (for smoothing only post data
+or not), and `smooth_k`, a tuning parameter for degree of smoothing.
 }

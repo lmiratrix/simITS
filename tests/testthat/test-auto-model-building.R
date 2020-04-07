@@ -4,7 +4,7 @@ context("test auto model building")
 
 test_that("The four smoothing calls work", {
   t0 = 0
-  dat = make_fake_data( t_min=-40, t_max=15, t0 = t0)
+  dat = generate_fake_data( t_min=-40, t_max=15, t0 = t0)
   nrow( dat )
   head( dat )
 

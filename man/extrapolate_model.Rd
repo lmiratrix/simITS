@@ -13,8 +13,8 @@ extrapolate_model(
   summarize = FALSE,
   smooth = FALSE,
   smoother = smooth_series,
-  full.output = FALSE,
-  fix.params = FALSE,
+  full_output = FALSE,
+  fix_parameters = FALSE,
   ...
 )
 }
@@ -39,9 +39,9 @@ data treajectories.}
 \item{smoother}{Function to do smoothing, if smoothing set to TRUE.  Default
 is smooth_series()}
 
-\item{full.output}{TRUE means smoother returns residuals as well as smoothed series.}
+\item{full_output}{TRUE means smoother returns residuals as well as smoothed series.}
 
-\item{fix.params}{Keep the parameters in the model M0 as fixed; do not add
+\item{fix_parameters}{Keep the parameters in the model M0 as fixed; do not add
 parameter uncertainty.}
 
 \item{...}{Extra arguments to be passed to smoother (e.g, bandwidth).}

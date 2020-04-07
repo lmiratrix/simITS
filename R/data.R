@@ -1,7 +1,7 @@
 # library(stats)
 
-#' @title Mechlenberg PSA Reform Data
-#' @description Monthly aggregate outcomes of various measures of interest from Mechlenberg. See MDRC Report.
+#' @title Mecklenberg PSA Reform Data
+#' @description Monthly aggregate outcomes of various measures of interest from Mecklenberg. See MDRC Report.
 #' @format A data frame with 54 rows and 10 variables:
 #' \describe{
 #'   \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
@@ -40,14 +40,14 @@
 
 
 
-#' @title Mecklenberg subgroup data
-#' @description Mecklenberg data of proportion of different categories of cases given bail (by month).
+#' @title Mecklenberg data by subgroup of charge type
+#' @description Mecklenberg data that gives proportion of different charge categories of cases given bail (by month).
 #' @format A data frame with 144 rows and 5 variables:
 #' \describe{
 #'   \item{\code{month}}{integer Month, with 0 being month of policy implementation.}
-#'   \item{\code{n.cases}}{integer Number of cases total that month}
-#'   \item{\code{n.bail}}{interger number of bail cases that month}
-#'   \item{\code{pbail}}{double Proportion of cases in subgroup assigned bail} 
-#'   \item{\code{category}}{character Category of group}
+#'   \item{\code{n.cases}}{integer Number of cases of that subgroup for that month}
+#'   \item{\code{n.bail}}{interger Total number of cases given bail for that subgroup for that month}
+#'   \item{\code{pbail}}{double Proportion of new cases in given subgroup in that month assigned bail} 
+#'   \item{\code{category}}{character Category of group (charge type).}
 #'}
 "meck_subgroup"

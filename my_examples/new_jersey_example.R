@@ -40,7 +40,7 @@ fit_season_model_temp =  make_fit_season_model( ~ temperature  )
 fit_season_model_q =  make_fit_season_model( ~ Q2 + Q3 + Q4  )
 
 #fit_season_model_sin =  make_fit_season_model( ~ sin.m + cos.m )
-fit_season_model_sin =  make_fit_season_model( ~ 1, no.lag = ~ sin.m + cos.m )
+fit_season_model_sin =  make_fit_season_model( ~ 1, no_lag = ~ sin.m + cos.m )
 
 fit_season_model_sintemp =  make_fit_season_model( ~ sin.m + cos.m + Q2 + Q3 + Q4 )
 

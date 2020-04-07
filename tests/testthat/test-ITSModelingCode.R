@@ -2,7 +2,7 @@
 
 test_that("smooth_series call", {
   
-  simData <- make_fake_data()
+  simData <- generate_fake_data()
   head( simData )
   
   Ysmooth1 = smooth_series( simData, outcomename="Y", t0=0 )
@@ -22,7 +22,7 @@ test_that("smooth_series call", {
 
 test_that("smooth_residuals call", {
   
-  simData <- make_fake_data()
+  simData <- generate_fake_data()
   head( simData )
   
   fm = make_fit_season_model( ~ Q1 + Q2 + Q3 )
@@ -45,7 +45,7 @@ test_that("smooth_residuals call", {
                                covariates = simData,
                                t0=0,
                                post.only = FALSE, 
-                               full.output = TRUE )
+                               full_output = TRUE )
   head( Ysmooth3 )
   expect_true( is.data.frame( Ysmooth3 ) )
   expect_equal( nrow( Ysmooth3 ), nrow( simData ) )
@@ -54,18 +54,18 @@ test_that("smooth_residuals call", {
 
 
 test_that( "extrapolate_model works", {
-  dat <- make_fake_data()
+  dat <- generate_fake_data()
   dat = add_lagged_covariates( dat, "Y"  )
   dat.pre = dplyr::filter( dat, month <= 0 )
   
   M0 = fit_model_default( dat.pre, "Y" )
 
   res = extrapolate_model( M0, "Y", dat, 0, 4, summarize=FALSE, smooth=FALSE,
-                           fix.params = TRUE )
+                           fix_parameters = TRUE )
   expect_equal( nrow( res ), 4 * nrow( dat ) )
   
   res = extrapolate_model( M0, "Y", dat, 0, 4, summarize=FALSE, smooth=FALSE,
-                           fix.params = FALSE )
+                           fix_parameters = FALSE )
   expect_equal( nrow( res ), 4 * nrow( dat ) )
   
 } )
@@ -75,7 +75,7 @@ test_that( "extrapolate_model works", {
 
 test_that( "Catches error in missing outcome", {
   
-  dat <- make_fake_data( rho = 2 )
+  dat <- generate_fake_data( rho = 2 )
   plot( dat$Y )
   expect_error( dat2 <- add_lagged_covariates( dat, "YY"  ) )
 
@@ -85,7 +85,7 @@ test_that( "Catches error in missing outcome", {
 
 test_that( "Warning in exponential blowup works", {
   
-    dat <- make_fake_data( rho = 2 )
+    dat <- generate_fake_data( rho = 2 )
     plot( dat$Y )
     dat = add_lagged_covariates( dat, "Y"  )
     dat.pre = dplyr::filter( dat, month <= 0 )
@@ -94,12 +94,12 @@ test_that( "Warning in exponential blowup works", {
     M0
     
     res = extrapolate_model( M0, "Y", dat, 0, 4, summarize=FALSE, smooth=FALSE,
-                             fix.params = TRUE )
+                             fix_parameters = TRUE )
     expect_equal( nrow( res ), 4 * nrow( dat ) )
     
     
     expect_warning( res2 <- extrapolate_model( M0, "Y", dat, 0, 4, summarize=FALSE, smooth=FALSE,
-                             fix.params = FALSE ) )
+                             fix_parameters = FALSE ) )
     expect_equal( nrow( res2 ), 4 * nrow( dat ) )
     
 } )

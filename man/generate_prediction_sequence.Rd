@@ -2,9 +2,7 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{generate_prediction_sequence}
 \alias{generate_prediction_sequence}
-\title{Given a model captured in beta.vec (the vector of coefficients from a
-regression held in 'fit0') and sigma (the standard deviation of the
-residuals), make a simulated series of time points that follow the model.}
+\title{Make a simulated series of time points that follow a fit model.}
 \usage{
 generate_prediction_sequence(beta.vec, sigma, dat, fit0, outcomename, t0)
 }

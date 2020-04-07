@@ -2,8 +2,7 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{generate_structure_sequence}
 \alias{generate_structure_sequence}
-\title{Generate the predictions of fit0 excluding the lagged outcome variable. This
-is a utility function used by the make_autoregressive_series() method.}
+\title{Generate the predictions of fit0 excluding the lagged outcome variable.}
 \usage{
 generate_structure_sequence(fit0, dat)
 }
@@ -16,6 +15,9 @@ generate_structure_sequence(fit0, dat)
 Predictions as a numeric vector.
 }
 \description{
+This is a utility function used by the make_autoregressive_series() method.
+}
+\details{
 We do this so we can subtract this part off before smoothing so our smoother
 doesn't have to try and capture the seasonality stuff.
 }

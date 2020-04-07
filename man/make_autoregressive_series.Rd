@@ -2,11 +2,7 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{make_autoregressive_series}
 \alias{make_autoregressive_series}
-\title{Given model parameters, make a synthetic timeseries for all points after t0.
-This series is a plausible continuation of a pre-policy series.  This method needs
-to be given the structural component, calculated from the intercept, linear trend,
-temperature, and seasonality.
-Bundling all seasonality, etc., into Ybar, the assumed model is:}
+\title{Make a synthetic timeseries with autoregressive structure}
 \usage{
 make_autoregressive_series(
   Ybar,
@@ -35,9 +31,15 @@ to this.  Ybar tends to come from generate_structure_sequence()}
 Vector of the synthetic outcomes.
 }
 \description{
-$$Y = Ybar + beta1 * Y.pre + residual$$
+Given model parameters, make a synthetic timeseries for all points after t0.
+This series is a plausible continuation of a pre-policy series.  This method needs
+to be given the structural component, calculated from the intercept, linear trend,
+temperature, and seasonality.
+Bundling all seasonality, etc., into Ybar, the assumed model is:
 }
 \details{
+$$Y = Ybar + beta1 * Y.pre + residual$$
+
 where Ybar is our structural model (with lagged OUTCOME, not lagged residual, so the generate_Ybars
 method will not give the correct values here).
 }

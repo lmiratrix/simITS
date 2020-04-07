@@ -14,14 +14,15 @@ process_outcome_model(
   smoother = NULL,
   fit_model = fit_model_default,
   covariates = NULL,
-  plug.in = FALSE,
+  plug_in = FALSE,
   ...
 )
 }
 \arguments{
 \item{outcomename}{Name of column in dat containing the time series.}
 
-\item{dat}{Dataframe with a 'month' column for time.}
+\item{dat}{Dataframe with a 'month' column for time.  `month` is assumed to
+be a sequence of integer values.}
 
 \item{t0}{Last pre-policy timepoint}
 
@@ -44,7 +45,7 @@ covariates.)}
 passed model function fit_model.  If null, will attempt to get list of
 covariates form the "lags" attribute of the passed 'fit_model'.}
 
-\item{plug.in}{Use the estimated parameters as fixed and do not include extra
+\item{plug_in}{Use the estimated parameters as fixed and do not include extra
 uncertainty of parameter estimation in the simulation. (Not recommended as
 it destroys inference.)}
 
@@ -63,12 +64,18 @@ If summarize=TRUE, A dataframe with several columns of interest and
   If summarize=FALSE, a dataframe of all the raw series generated.
 }
 \description{
+This is the primary function to use to use this approach on a given dataset.
+}
+\details{
 Take a given outcome variable, fit an ITS model, use it to extrapolate R
 plusible trajectories, and then using these trajectories, generate final
 impact results by averaging (if summarize is set to TRUE).
-}
-\details{
+
 This function is basically a wrapper for `extrapolate_model()` with some
 extra calls to `make_model_smoother()` to prepare, in the case of smoothing,
-and adding on a summary trend via `generate_Ybars()` in the case of summarizing.
+and adding on a summary trend via `generate_Ybars()` in the case of
+summarizing.
+}
+\seealso{
+extrapolate_model
 }

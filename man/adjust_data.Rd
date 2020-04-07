@@ -2,7 +2,7 @@
 % Please edit documentation in R/post_stratified_ITS.R
 \name{adjust_data}
 \alias{adjust_data}
-\title{Adjust an outcome based on the group weights.}
+\title{Adjust an outcome time series based on the group weights.}
 \usage{
 adjust_data(
   dat,
@@ -36,5 +36,7 @@ as well.}
 variable names).}
 }
 \description{
-Adjust an outcome based on the group weights.
+Reweight the components of a series to match target weights for several
+categories. This is a good preprocessing step to adjust for time-varying
+covariates such as changing mix of case types.
 }

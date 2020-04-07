@@ -131,7 +131,7 @@ if( FALSE ) {
   ##
   ## examine smoothing
   ##
-  predictions = process_outcome_model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=TRUE, full.output=TRUE)
+  predictions = process_outcome_model( "Y", dat, t0=t0, R = 10, summarize = FALSE, smooth=TRUE, full_output=TRUE)
   head( predictions )
 
   ggplot( predictions, aes( month, Ystar ) ) +

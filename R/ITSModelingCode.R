@@ -24,7 +24,7 @@ SMOOTH_K = 11
 #' @export
 generate_Ybars = function( fit_model, outcomename, t0, dat ) {
 
-  # refit model with no lags
+  # refit model with no_lags
   #fm = formula( fit0 )
   #vrs = all.vars( fm )
   #lgs = grep( "lag.", vrs, value=TRUE )
@@ -39,7 +39,8 @@ generate_Ybars = function( fit_model, outcomename, t0, dat ) {
 
 
 
-
+#' Make a synthetic timeseries with autoregressive structure
+#' 
 #' Given model parameters, make a synthetic timeseries for all points after t0.
 #' This series is a plausible continuation of a pre-policy series.  This method needs
 #' to be given the structural component, calculated from the intercept, linear trend,
@@ -80,9 +81,9 @@ make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
 }
 
 
-
-#' Generate the predictions of fit0 excluding the lagged outcome variable. This
-#' is a utility function used by the make_autoregressive_series() method.
+#' Generate the predictions of fit0 excluding the lagged outcome variable.
+#'
+#' This is a utility function used by the make_autoregressive_series() method.
 #'
 #' We do this so we can subtract this part off before smoothing so our smoother
 #' doesn't have to try and capture the seasonality stuff.
@@ -95,6 +96,9 @@ generate_structure_sequence = function( fit0, dat ) {
 }
 
 
+
+#' Make a simulated series of time points that follow a fit model.
+#' 
 #' Given a model captured in beta.vec (the vector of coefficients from a
 #' regression held in 'fit0') and sigma (the standard deviation of the
 #' residuals), make a simulated series of time points that follow the model.
@@ -160,8 +164,12 @@ generate_prediction_sequence = function( beta.vec, sigma,
 #'   the time series is.
 #' @param outcomename String name of the outcome variable in dat.
 #' @param t0 last pre-policy timepoint
-#' @param post.only Boolean of smooth post-policy data only, or full sequence.
 #' @param ... Extra arguments (not used in this function).
+#' @param post.only If TRUE fit model and smooth post-policy only. WHY fit model
+#'   on post-policy data only?  Because this will make sure the fixed pre-policy
+#'   does not dominate too much?  We are focusing on post-policy so we want a
+#'   good fitting model for that so we can get our residuals as "white noise" as
+#'   possible before smoothing.
 #'
 #' @return An updated version of the 'res' dataframe with `Ysmooth`, the
 #'   smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
@@ -209,31 +217,21 @@ smooth_series = function( res, outcomename, t0,
 #' pre-policy and synthetic data post policy (i.e., smooth the entire plausible
 #' series).
 #'
-#' @param res A dataframe with a month column and 'outcomename' column, which is
-#'   the column to be smoothed.
+#' @inheritParams smooth_series
 #' @param fit_model A function that takes data, fits a linear model, and returns
 #'   the fit model. This function needs an option to include (or not) lagged
 #'   covariates.
-#' @param outcomename String name of the outcome variable in dat.
-#' @param t0 last pre-policy timepoint
+#' @param full_output If TRUE give back pieces for diagnostics of smoothing
+#'   process.
 #' @param covariates A dataframe with all covariates needed in the model fitting
 #'   defined by fit_model.
-#' @param smooth_k A rough proxy for the number of observations to primarily
-#'   consider to kernal weight in the neighborhood of each timepoint (this is a
-#'   bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
-#'   want to smooth with an absolute bandwidth, not one as function of how long
-#'   the time series is.
-#' @param post.only If TRUE fit model and smooth post-policy only. WHY fit model
-#'   on post-policy data only?  Because this will make sure the fixed pre-policy
-#'   does not dominate too much?  We are focusing on post-policy so we want a
-#'   good fitting model for that so we can get our residuals as "white noise" as
-#'   possible before smoothing.
-#' @param full.output If TRUE give back pieces for diagnostics of smoothing
-#'   process.
-#' @param t0 Last month of pre-policy.  Will start predicting at t0+1.
-#' @param outcomename The name of the column in dat which is our outcome.
 #'
+#' @return A numeric vector of the smoothed residuals.  If full_output=TRUE return a dataframe with 
+#'   several other columns: `resid`, the residuals based on Ystar and the model,
+#'   `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
+#'   the model used for smoothing.  Here the smoothed values will be 'Ysmooth'.
 #' @export
+#' @seealso smooth_series
 #' @importFrom rlang .data
 #' @importFrom dplyr mutate filter
 smooth_residuals = function( res, t0, outcomename,
@@ -241,7 +239,7 @@ smooth_residuals = function( res, t0, outcomename,
                              smooth_k = SMOOTH_K,
                              fit_model = fit_model_default,
                              covariates,
-                             full.output = FALSE ) {
+                             full_output = FALSE ) {
     stopifnot( nrow( res ) == nrow( covariates ) )
 
     covariates$Y = res[[outcomename]]
@@ -265,7 +263,7 @@ smooth_residuals = function( res, t0, outcomename,
                          Ysmooth = .data$Ybar.sm + .data$residStar )
 
     # Give back columns of interest (for debugging)
-    if ( full.output ) {
+    if ( full_output ) {
       dplyr::select( covariates, .data$month, .data$resid, .data$residStar, .data$Ybar.sm, .data$Y, .data$Ysmooth )
     } else {
       covariates$Ysmooth
@@ -284,9 +282,15 @@ smooth_residuals = function( res, t0, outcomename,
 #' This can be used to build smoothers that smooth using models other than the
 #' model being used for extrapolation (e.g., a model without temperature).
 #'
+#' Resulting functions have the following parameters: `res` (the data), `t0`
+#' (start time), `outcomename`, `post.only` flag (for smoothing only post data
+#' or not), and `smooth_k`, a tuning parameter for degree of smoothing.
+#'
+#'
 #' @inheritParams smooth_residuals
-#' 
-#' @return a smoother function that can be passed to the smoothing routines.
+#'
+#' @return A smoother function that can be passed to the smoothing routines.
+#'   This function is of the form listed above.
 #'
 #' @export
 make_model_smoother = function( fit_model, covariates ) {
@@ -304,14 +308,6 @@ make_model_smoother = function( fit_model, covariates ) {
 }
 
 
-
-#' OLD
-#' #' @return An updated version of the 'res' dataframe with `Ysmooth`, the
-#'   smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
-#'   the original sequence to be smoothed.  If full.output=TRUE also include
-#'   several other columns: `resid`, the residuals based on Ystar and the model,
-#'   `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
-#'   the model used for smoothing.
 
 
 
@@ -331,6 +327,7 @@ make_model_smoother = function( fit_model, covariates ) {
 #' @param outcomename The name of the column in dat which is our outcome.
 #'
 #' @return data.frame with the collection of predicted series
+#' 
 #' @export
 make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
@@ -376,16 +373,10 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
 
 
-#' Generate a collection of counterfactual trajectories
-#'
-#'
-#' Given a fit linear model 'fit0', generate R prediction series, taking the
-#' point estimates from the fit model as fixed parameters.
-#'
-#' WARNING: This will not capture true uncertainty as it is not taking parameter uncertainty into account.
-#'
-#' @inheritParams make_many_predictions
-#' @return data.frame with the collection of predicted series
+#' @describeIn make_many_predictions Make many predictions using estimated
+#'   parameters without additional uncertainty. This takes point estimates from
+#'   the fit model as fixed parameters. WARNING: This method will not capture true
+#'   uncertainty as it is not taking parameter uncertainty into account.
 #' @export
 make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 
@@ -460,20 +451,20 @@ add_lagged_covariates = function( dat,
 #'   data treajectories.
 #' @param smoother  Function to do smoothing, if smoothing set to TRUE.  Default
 #'   is smooth_series()
-#' @param fix.params Keep the parameters in the model M0 as fixed; do not add
+#' @param fix_parameters Keep the parameters in the model M0 as fixed; do not add
 #'   parameter uncertainty.
 #' @param ... Extra arguments to be passed to smoother (e.g, bandwidth).
-#' @param full.output TRUE means smoother returns residuals as well as smoothed series.
+#' @param full_output TRUE means smoother returns residuals as well as smoothed series.
 #'
 #' @return Dataframe with columns corresponding to the simulations.  If
 #'   summarize=TRUE, one row per month in original data.  If FALSE, all the
 #'   details of all the runs are returned.
 #' @export
 extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
-                              smoother = smooth_series, full.output = FALSE,fix.params = FALSE, ...) {
+                              smoother = smooth_series, full_output = FALSE, fix_parameters = FALSE, ...) {
   # require( tidyverse )
 
-  if ( fix.params ) {
+  if ( fix_parameters ) {
     predictions = make_many_predictions_plug( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
   } else {
     predictions = make_many_predictions( M0, dat=dat, outcomename=outcomename, R=R, t0 = t0 )
@@ -520,7 +511,7 @@ extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, 
       full.dat$Ysmooth1 = smoother( full.dat, outcomename="Y", t0=t0, ... )
 
       #full.dat = rename( full.dat, Ystar1 = Ystar, Ysmooth1 = Ysmooth )
-      #if ( full.output ) {
+      #if ( full_output ) {
       #  full.dat = rename( full.dat, resid1 = resid, residStar1 = residStar )
       #}
       p2 = merge( p2, full.dat, by="month", all=TRUE )

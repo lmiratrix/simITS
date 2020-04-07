@@ -2,8 +2,7 @@
 % Please edit documentation in R/post_stratified_ITS.R
 \name{calculate_group_weights}
 \alias{calculate_group_weights}
-\title{Calculate overall proportion of cases in each group that lie within a given
-interval of time defined by t_min and t_max.}
+\title{Calculate proportion of subgroups across time}
 \usage{
 calculate_group_weights(groupname, dat, t_min, t_max = max(dat$month), N = "N")
 }

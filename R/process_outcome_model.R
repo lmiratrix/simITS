@@ -23,16 +23,20 @@ drop_extra_covariates = function( M0, data  ) {
 
 #' Generate an ITS extrapolation simulation.
 #'
+#' This is the primary function to use to use this approach on a given dataset.
+#'
 #' Take a given outcome variable, fit an ITS model, use it to extrapolate R
 #' plusible trajectories, and then using these trajectories, generate final
 #' impact results by averaging (if summarize is set to TRUE).
 #'
 #' This function is basically a wrapper for `extrapolate_model()` with some
 #' extra calls to `make_model_smoother()` to prepare, in the case of smoothing,
-#' and adding on a summary trend via `generate_Ybars()` in the case of summarizing.
+#' and adding on a summary trend via `generate_Ybars()` in the case of
+#' summarizing.
 #'
 #' @param outcomename  Name of column in dat containing the time series.
-#' @param dat Dataframe with a 'month' column for time.
+#' @param dat Dataframe with a 'month' column for time.  `month` is assumed to
+#'   be a sequence of integer values.
 #' @param t0 Last pre-policy timepoint
 #' @param R Number of simulated pre-policy extrapolations to generate.
 #' @param summarize Summarise the series? (TRUE/FALSE)
@@ -47,7 +51,7 @@ drop_extra_covariates = function( M0, data  ) {
 #' @param covariates Vector of covariate names of all covariates used in the
 #'   passed model function fit_model.  If null, will attempt to get list of
 #'   covariates form the "lags" attribute of the passed 'fit_model'.
-#' @param plug.in Use the estimated parameters as fixed and do not include extra
+#' @param plug_in Use the estimated parameters as fixed and do not include extra
 #'   uncertainty of parameter estimation in the simulation. (Not recommended as
 #'   it destroys inference.)
 #' @param ... Extra arguments to be passed to `extrapolate_model()`
@@ -61,12 +65,13 @@ drop_extra_covariates = function( M0, data  ) {
 #'   outcome given the model with no autoregressive aspect.
 #'
 #'   If summarize=FALSE, a dataframe of all the raw series generated.
+#' @seealso extrapolate_model
 #' @export
 process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
                                   smooth=FALSE, smoother = NULL,
                                   fit_model = fit_model_default,
                                   covariates = NULL,
-                                  plug.in = FALSE, ... ) {
+                                  plug_in = FALSE, ... ) {
   
   if ( is.null( covariates ) ) {
     covariates = attr( fit_model, "lags" )
@@ -93,7 +98,7 @@ process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
   
   res = extrapolate_model( M0, outcomename, dat, t0, R, summarize=summarize, 
                            smooth=smooth, smoother=smoother, 
-                           fix.params = plug.in,
+                           fix_parameters = plug_in,
                            ... )
   
   if ( summarize ) {

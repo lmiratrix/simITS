@@ -51,14 +51,14 @@ test_that("aggregate_data", {
 
 
 
-test_that( "make_fake_group_data works", {
+test_that( "generate_fake_grouped_data works", {
   
-  fd = make_fake_group_data( -10, 0, 10 )
+  fd = generate_fake_grouped_data( -10, 0, 10 )
   head( fd )
   expect_equal( nrow( fd ), 21 * 2 ) 
   
   
-  fd2 = make_fake_group_data( -10, 0, 10, method = "jersey" )
+  fd2 = generate_fake_grouped_data( -10, 0, 10, method = "jersey" )
   head( fd2 )
   expect_equal( nrow( fd2 ), 21 * 3 ) 
   

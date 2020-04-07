@@ -23,12 +23,12 @@
 #'   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 #'
 #' @examples
-#' simData <- make_fake_data()
+#' simData <- generate_fake_data()
 #' t0 <- 0
-#' simData <- make_fake_data(t_min=-40, t_max=15, t0=t0)
+#' simData <- generate_fake_data(t_min=-40, t_max=15, t0=t0)
 #'
 #' @export
-make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
+generate_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
                            coef_line = c( 20, 0.05 ),
                            coef_q = c( 1.0, 0, -1.0, 0 ),
                            coef_temp = 0.10,
@@ -73,13 +73,13 @@ make_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega 
 
 if ( FALSE ) {
 
-  df = make_fake_data( t_min = -80, t_max = 12, t0 = 0 )
+  df = generate_fake_data( t_min = -80, t_max = 12, t0 = 0 )
   ggplot2::facet_wrapggplot( df, ggplot2::facet_wrapaes( month, Y ) ) +
     ggplot2::geom_line() +
     ggplot2::geom_line( ggplot2::aes( y=Ystr ), col="red" )
 
 
-  df = make_fake_data( t_min = -80, t_max = 12, t0 = 0, sd.omega = 3,
+  df = generate_fake_data( t_min = -80, t_max = 12, t0 = 0, sd.omega = 3,
                        rho = 0)
   ggplot2::ggplot( df, aes( month, Y ) ) +
     ggplot2::geom_line() +
@@ -89,7 +89,7 @@ if ( FALSE ) {
 
   t0=-12
 
-  df = make_fake_data( t_min = -80, t_max = 12, t0 = t0, sd.omega = 3,
+  df = generate_fake_data( t_min = -80, t_max = 12, t0 = t0, sd.omega = 3,
                        rho = 0,
                        coef_line = c(50, 0.05 ),
                        coef_temp = 0,

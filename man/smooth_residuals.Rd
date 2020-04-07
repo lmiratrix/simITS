@@ -12,16 +12,16 @@ smooth_residuals(
   smooth_k = SMOOTH_K,
   fit_model = fit_model_default,
   covariates,
-  full.output = FALSE
+  full_output = FALSE
 )
 }
 \arguments{
-\item{res}{A dataframe with a month column and 'outcomename' column, which is
-the column to be smoothed.}
+\item{res}{A dataframe with a month column and an 'outcomename' column (which
+is the column that will be smoothed).}
 
-\item{t0}{Last month of pre-policy.  Will start predicting at t0+1.}
+\item{t0}{last pre-policy timepoint}
 
-\item{outcomename}{The name of the column in dat which is our outcome.}
+\item{outcomename}{String name of the outcome variable in dat.}
 
 \item{post.only}{If TRUE fit model and smooth post-policy only. WHY fit model
 on post-policy data only?  Because this will make sure the fixed pre-policy
@@ -42,8 +42,14 @@ covariates.}
 \item{covariates}{A dataframe with all covariates needed in the model fitting
 defined by fit_model.}
 
-\item{full.output}{If TRUE give back pieces for diagnostics of smoothing
+\item{full_output}{If TRUE give back pieces for diagnostics of smoothing
 process.}
+}
+\value{
+A numeric vector of the smoothed residuals.  If full_output=TRUE return a dataframe with 
+  several other columns: `resid`, the residuals based on Ystar and the model,
+  `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
+  the model used for smoothing.  Here the smoothed values will be 'Ysmooth'.
 }
 \description{
 Smooth a series by fitting the model to the data, smoothing the residuals,
@@ -53,4 +59,7 @@ and then putting the model predictions back.
 Use loess smoother on complete series of residuals including original data
 pre-policy and synthetic data post policy (i.e., smooth the entire plausible
 series).
+}
+\seealso{
+smooth_series
 }

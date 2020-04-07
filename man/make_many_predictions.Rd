@@ -2,16 +2,12 @@
 % Please edit documentation in R/ITSModelingCode.R
 \name{make_many_predictions}
 \alias{make_many_predictions}
-\title{OLD
-#' @return An updated version of the 'res' dataframe with `Ysmooth`, the
-  smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
-  the original sequence to be smoothed.  If full.output=TRUE also include
-  several other columns: `resid`, the residuals based on Ystar and the model,
-  `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
-  the model used for smoothing.
-Generate a collection of raw counterfactual trajectories}
+\alias{make_many_predictions_plug}
+\title{Generate a collection of raw counterfactual trajectories}
 \usage{
 make_many_predictions(fit0, dat, R, outcomename, t0)
+
+make_many_predictions_plug(fit0, dat, R, outcomename, t0)
 }
 \arguments{
 \item{fit0}{The fit linear model to simulate from.}
@@ -33,3 +29,11 @@ Given a fit linear model 'fit0', generate R prediction series starting at t0.
 This takes model uncertainty into account by pulling from the
 pseudo-posterior of the model parameters (from Gelman and Hill arm package).
 }
+\section{Functions}{
+\itemize{
+\item \code{make_many_predictions_plug}: Make many predictions using estimated
+parameters without additional uncertainty. This takes point estimates from
+the fit model as fixed parameters. WARNING: This method will not capture true
+uncertainty as it is not taking parameter uncertainty into account.
+}}
+

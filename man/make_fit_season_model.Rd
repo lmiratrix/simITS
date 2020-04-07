@@ -4,12 +4,12 @@
 \alias{make_fit_season_model}
 \title{Make a fit_model that takes a seasonality component}
 \usage{
-make_fit_season_model(formula, no.lag = NULL)
+make_fit_season_model(formula, no_lag = NULL)
 }
 \arguments{
 \item{formula}{Formula specifying seasonality.  No outcome or month needed.}
 
-\item{no.lag}{Formula specifying additional variables to not lag (usually used due
+\item{no_lag}{Formula specifying additional variables to not lag (usually used due
 to colinearity of lagged outcomes, such as with a sin and cos component).}
 }
 \value{

@@ -108,7 +108,7 @@ sstat$t.obs - quantile( sstat$t, c( 0.025, 0.975 ))
 
 For simulation we also offer a fake data generator.  It works like this:
 ```{r}
-dat = make_fake_data( t_min=-60, t_max=18, t0 = 0 )
+dat = generate_fake_data( t_min=-60, t_max=18, t0 = 0 )
 qplot( month, Y, data=dat, geom = c( "point","line") )
 ```
 

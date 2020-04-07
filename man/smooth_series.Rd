@@ -20,7 +20,11 @@ bandwidth, and the loess smoother gets smooth_k / n as a span value).  We
 want to smooth with an absolute bandwidth, not one as function of how long
 the time series is.}
 
-\item{post.only}{Boolean of smooth post-policy data only, or full sequence.}
+\item{post.only}{If TRUE fit model and smooth post-policy only. WHY fit model
+on post-policy data only?  Because this will make sure the fixed pre-policy
+does not dominate too much?  We are focusing on post-policy so we want a
+good fitting model for that so we can get our residuals as "white noise" as
+possible before smoothing.}
 
 \item{...}{Extra arguments (not used in this function).}
 }

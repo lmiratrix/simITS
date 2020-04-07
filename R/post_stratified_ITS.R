@@ -3,11 +3,11 @@
 ##
 ## Post-stratified ITS estimator code
 ##
-## This builds on the seasonality code.
 
 
 
-
+#' Calculate proportion of subgroups across time
+#' 
 #' Calculate overall proportion of cases in each group that lie within a given
 #' interval of time defined by t_min and t_max.
 #'
@@ -105,7 +105,11 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 }
 
 
-#' Adjust an outcome based on the group weights.
+#' Adjust an outcome time series based on the group weights.
+#'
+#' Reweight the components of a series to match target weights for several
+#' categories. This is a good preprocessing step to adjust for time-varying
+#' covariates such as changing mix of case types.
 #'
 #' @param outcomename Name of column that has the outcome to calculated adjusted
 #'   values for.
@@ -162,7 +166,7 @@ adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
 
 ####### For simulation studies and illustration #######
 
-#' A fake DGP for illustrating the code.
+#' A fake DGP with time varying categorical covariate for illustrating the code.
 #'
 #' This code makes synthetic grouped data that can be used to illustrate
 #' benefits of post stratification.
@@ -172,7 +176,7 @@ adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
 #' @param t0 last pre-policy timepoint
 #' @param method Type of post-stratification structure to generate.
 #' @export
-make_fake_group_data = function( t_min, t0, t_max, method=c("complex","linear","jersey") ) {
+generate_fake_grouped_data = function( t_min, t0, t_max, method=c("complex","linear","jersey") ) {
     stopifnot( t_min < t0 )
     stopifnot( t_max > t0 )
     t = t_min:t_max
@@ -282,7 +286,7 @@ if ( FALSE ) {
     t0 = 0
     t_max = 18
 
-    dat = make_fake_group_data( t_min, t0, t_max, method = "jersey" )
+    dat = generate_fake_grouped_data( t_min, t0, t_max, method = "jersey" )
     head( dat )
 
     ss = aggregate_data( dat, "prop", "type", rich=TRUE )
@@ -373,7 +377,7 @@ if ( FALSE ) {
     t0 = 0
     t_max = 18
 
-    dat = make_fake_group_data( t_min, t0, t_max )
+    dat = generate_fake_grouped_data( t_min, t0, t_max )
     head( dat )
 
     pis = calculate_group_weights( "type", dat, t0, max(dat$month) )

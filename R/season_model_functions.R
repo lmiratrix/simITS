@@ -35,12 +35,12 @@ fit_model_default = function( dat, outcomename, lagless = FALSE, ... ) {
 #' intercept in automatically.
 #'
 #' @param formula Formula specifying seasonality.  No outcome or month needed.
-#' @param no.lag Formula specifying additional variables to not lag (usually used due
+#' @param no_lag Formula specifying additional variables to not lag (usually used due
 #'   to colinearity of lagged outcomes, such as with a sin and cos component).
 #' @return A function that takes dat, outcomename, and a lagless flag (see,
 #'   e.g., fit_model_default)
 #' @export
-make_fit_season_model = function( formula, no.lag = NULL ) {
+make_fit_season_model = function( formula, no_lag = NULL ) {
   
   stopifnot( attr( stats::terms( formula ), "response" ) == 0 )
   
@@ -48,11 +48,11 @@ make_fit_season_model = function( formula, no.lag = NULL ) {
   
   vrs = all.vars( formula )
   
-  # add in the no lag elements
-  if ( !is.null( no.lag ) ) {
-    stopifnot( attr( stats::terms( no.lag ), "response" ) == 0 )
+  # add in the no_lag elements
+  if ( !is.null( no_lag ) ) {
+    stopifnot( attr( stats::terms( no_lag ), "response" ) == 0 )
     
-    vrno = all.vars( no.lag )
+    vrno = all.vars( no_lag )
     vrno = paste0( vrno, collapse = " + " )
     formula = stats::update.formula( formula, paste0( "~ . + ", vrno ) )
   }

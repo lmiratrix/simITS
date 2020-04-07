@@ -149,7 +149,7 @@ set.seed( 1234 )
 predictions = process_outcome_model( "pbail", meck,
                                   t0=t0, R = 10,
                                   summarize = FALSE, smooth=FALSE,
-                                  plug.in = TRUE)
+                                  plug_in = TRUE)
 
 
 head( predictions )
@@ -219,7 +219,7 @@ envelope = process_outcome_model( "pbail", meck,
 envelope.plug = process_outcome_model( "pbail", meck,
                                        t0=t0, R = R,
                                        summarize = TRUE, smooth=FALSE,
-                                       plug.in = TRUE )
+                                       plug_in = TRUE )
 
 nrow( envelope )
 head( envelope )
