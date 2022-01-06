@@ -19,9 +19,13 @@ calculate_average_outcome(res, outcomename, months = 1:54, ...)
 Single number (in this case mean of given months)
 }
 \description{
-Given a set of simulation runs, estimate average impact over range of months
+Given a set of simulation runs, estimate average impact over range of months.
 }
 \examples{
 data( mecklenberg )
 calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
+calculate_average_outcome( mecklenberg, "pbail", months = 1:18 )
+}
+\seealso{
+See \code{\link{aggregate_simulation_results}} for how this function would be used.
 }

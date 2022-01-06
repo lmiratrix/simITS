@@ -15,7 +15,19 @@ fit_model_default(dat, outcomename, lagless = FALSE, ...)
 
 \item{...}{Extra arguments passed to the lm() call.}
 }
+\value{
+A fit model (a `lm` object from a `lm()` call) from fitting a simple
+  regression of outcome onto month and lagged month.
+}
 \description{
-This fits the model outcomename ~ lag.outcome + month, with no
+This fits the model `outcomename ~ lag.outcome + month`, with no
 covariates.
+}
+\examples{
+mecklenberg = add_lagged_covariates(mecklenberg, "pbail")
+meck.pre = filter( mecklenberg, month <= 0 )
+mod = fit_model_default( meck.pre, "pbail", lagless = TRUE )
+summary( mod )
+mod = fit_model_default( meck.pre, "pbail", lagless = FALSE )
+summary( mod )
 }

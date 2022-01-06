@@ -1,7 +1,7 @@
 
 #' Default ITS model
 #'
-#' This fits the model outcomename ~ lag.outcome + month, with no
+#' This fits the model `outcomename ~ lag.outcome + month`, with no
 #' covariates.
 #'
 #' @param dat Dataframe of pre-policy data to fit model to.  Needs a "month" column
@@ -10,7 +10,16 @@
 #' @param ... Extra arguments passed to the lm() call.
 
 #' @export
-
+#' @return A fit model (a `lm` object from a `lm()` call) from fitting a simple
+#'   regression of outcome onto month and lagged month.
+#'
+#' @examples
+#' mecklenberg = add_lagged_covariates(mecklenberg, "pbail")
+#' meck.pre = filter( mecklenberg, month <= 0 )
+#' mod = fit_model_default( meck.pre, "pbail", lagless = TRUE )
+#' summary( mod )
+#' mod = fit_model_default( meck.pre, "pbail", lagless = FALSE )
+#' summary( mod )
 fit_model_default = function( dat, outcomename, lagless = FALSE, ... ) {
   monthname = "month"
   
@@ -37,9 +46,15 @@ fit_model_default = function( dat, outcomename, lagless = FALSE, ... ) {
 #' @param formula Formula specifying seasonality.  No outcome or month needed.
 #' @param no_lag Formula specifying additional variables to not lag (usually used due
 #'   to colinearity of lagged outcomes, such as with a sin and cos component).
-#' @return A function that takes dat, outcomename, and a lagless flag (see,
-#'   e.g., fit_model_default)
+#' @return A callable function that takes the arguments of dat, outcomename, and a lagless flag (see,
+#'   e.g., the parameters listed in `fit_model_default()`).
+#' @seealso fit_model_default for the type of function this method will generate.   
 #' @export
+#' @examples
+#' data( "newjersey")
+#' modF = make_fit_season_model( ~ temperature )
+#' newjersey = add_lagged_covariates( newjersey, "n.warrant", covariates = c("temperature") )
+#' modF( newjersey, "n.warrant" )
 make_fit_season_model = function( formula, no_lag = NULL ) {
   
   stopifnot( attr( stats::terms( formula ), "response" ) == 0 )

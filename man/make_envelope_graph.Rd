@@ -7,16 +7,42 @@
 make_envelope_graph(envelope, t0, ylab = "Y", xlab = "month")
 }
 \arguments{
-\item{envelope}{The result of a process_outcome_model call, i.e. dataframe
-with columns of original data, imputed data and, potentially, smoothed
-data.}
+\item{envelope}{The result of a `process_outcome_model()` call, i.e.
+dataframe with columns of original data, imputed data and, potentially,
+smoothed data.}
 
-\item{t0}{Last pre-policy timepoint.}
+\item{t0}{Last pre-policy timepoint. Will draw vertical line here.}
 
 \item{ylab}{Y label of plot}
 
 \item{xlab}{X label of plot}
 }
+\value{
+Returns (does not yet display) a ggplot plot object containing the
+  time series along with extrapolation and prediction envelope. This plot can
+  be augmented and changed via standard ggplot commands.
+}
 \description{
-Make envelope style graph with associated smoothed trendlines
+This method builds a ggplot object with the trendline and prediction
+envelope. It can be customized after the fact by adding more ggplot layers
+via normal ggplot "+" syntax.
+}
+\examples{
+data( "mecklenberg" )
+t0 = 0
+envelope = process_outcome_model( "pbail", mecklenberg, 
+                                  t0=t0, R = 10, 
+                                  summarize = TRUE, smooth=FALSE )
+make_envelope_graph(envelope, t0=t0, ylab = "Proportion given bail") +
+  ggplot2::labs( title="Sample ITS plot")
+data( "mecklenberg" )
+t0 = 0
+envelope = process_outcome_model( "pbail", mecklenberg, 
+                                  t0=t0, R = 10, 
+                                  summarize = TRUE, smooth=FALSE )
+make_envelope_graph(envelope, t0=t0, ylab = "Proportion given bail") +
+  ggplot2::labs( title="Sample ITS plot")
+}
+\seealso{
+The \code{ggplot2} package.
 }

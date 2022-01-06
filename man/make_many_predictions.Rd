@@ -12,8 +12,8 @@ make_many_predictions_plug(fit0, dat, R, outcomename, t0)
 \arguments{
 \item{fit0}{The fit linear model to simulate from.}
 
-\item{dat}{A dataframe with the covariates needed by the model fit0 for both pre
-and post-policy months.}
+\item{dat}{A dataframe with the covariates needed by the model fit0 for both
+pre and post-policy months.}
 
 \item{R}{Number of series to generate.}
 
@@ -22,7 +22,8 @@ and post-policy months.}
 \item{t0}{Last month of pre-policy.  Will start predicting at t0+1.}
 }
 \value{
-data.frame with the collection of predicted series
+A data.frame with the collection of predicted series, one row per
+  month per replicate (so will have R*nrow(dat) rows).
 }
 \description{
 Given a fit linear model 'fit0', generate R prediction series starting at t0.
@@ -31,9 +32,26 @@ pseudo-posterior of the model parameters (from Gelman and Hill arm package).
 }
 \section{Functions}{
 \itemize{
-\item \code{make_many_predictions_plug}: Make many predictions using estimated
-parameters without additional uncertainty. This takes point estimates from
-the fit model as fixed parameters. WARNING: This method will not capture true
-uncertainty as it is not taking parameter uncertainty into account.
+\item \code{make_many_predictions_plug}: This version makes multiple predictions
+using estimated parameters without additional uncertainty. This takes point
+estimates from the fit model as fixed parameters. WARNING: This method will
+not capture true uncertainty as it is not taking parameter uncertainty into
+account.
 }}
 
+\examples{
+data("mecklenberg" )
+mecklenberg = add_lagged_covariates( mecklenberg, "pbail"  )
+mecklenberg.pre = dplyr::filter( mecklenberg, month <= 0 )
+M0 = fit_model_default( mecklenberg.pre, "pbail" )
+res = make_many_predictions( M0, dat=mecklenberg, outcome="pbail", t0=0, R=2 )
+tail( res )
+}
+\references{
+The `arm` package, see
+  \url{https://cran.r-project.org/package=arm}
+
+  Also see Gelman, A., & Hill, J. (2007). Data analysis using regression and
+  multilevelhierarchical models (Vol. 1). New York, NY, USA: Cambridge
+  University Press.
+}

@@ -39,10 +39,11 @@ data treajectories.}
 \item{smoother}{Function to do smoothing, if smoothing set to TRUE.  Default
 is smooth_series()}
 
-\item{full_output}{TRUE means smoother returns residuals as well as smoothed series.}
+\item{full_output}{TRUE means smoother returns residuals as well as smoothed
+series.}
 
-\item{fix_parameters}{Keep the parameters in the model M0 as fixed; do not add
-parameter uncertainty.}
+\item{fix_parameters}{Keep the parameters in the model M0 as fixed; do not
+add parameter uncertainty.}
 
 \item{...}{Extra arguments to be passed to smoother (e.g, bandwidth).}
 }
@@ -52,6 +53,19 @@ Dataframe with columns corresponding to the simulations.  If
   details of all the runs are returned.
 }
 \description{
-This function takes a fitted model and uses it to make the post-policy predictions by
-simulating data.
+This function takes a fitted model and uses it to make the post-policy
+predictions by simulating data.
+}
+\examples{
+data("mecklenberg" )
+mecklenberg = add_lagged_covariates( mecklenberg, "pbail"  )
+mecklenberg.pre = dplyr::filter( mecklenberg, month <= 0 )
+M0 = fit_model_default( mecklenberg.pre, "pbail" )
+res = extrapolate_model( M0, "pbail", mecklenberg, 0, 1,
+                         smooth=TRUE)
+tail( res )
+}
+\seealso{
+\code{\link{process_outcome_model}} for wrapper function for this
+  method that is easier to use.
 }

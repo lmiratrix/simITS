@@ -76,6 +76,15 @@ extra calls to `make_model_smoother()` to prepare, in the case of smoothing,
 and adding on a summary trend via `generate_Ybars()` in the case of
 summarizing.
 }
+\examples{
+data( "mecklenberg" )
+t0 = 0
+envelope = process_outcome_model( "pbail", mecklenberg, 
+                                  t0=t0, R = 10, 
+                                  summarize = TRUE, smooth=FALSE )
+make_envelope_graph(envelope, t0=t0, ylab = "Proportion given bail") +
+  ggplot2::labs( title="Sample ITS plot")
+}
 \seealso{
-extrapolate_model
+The core internal function that this method is a wrapper for is \code{\link{extrapolate_model}}.
 }

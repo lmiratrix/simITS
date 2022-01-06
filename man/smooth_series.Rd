@@ -42,3 +42,23 @@ series).
 This method takes several parameters it does not use, to maintain
 compatability with smooth_residuals.
 }
+\examples{
+
+data( "newjersey" )
+smooth = smooth_series( newjersey, outcomename = "n.warrant", t0= -8,
+                        smooth_k = 30,
+                        post.only = FALSE)
+plot( newjersey$month, newjersey$n.warrant )
+lines( newjersey$month, smooth, col="red" )  
+
+mod =  make_fit_season_model( ~ temperature )
+newjersey = add_lagged_covariates( newjersey, outcomename = "n.warrant", 
+                                   covariates = c("temperature") )
+
+smooth = smooth_residuals( newjersey, outcomename = "n.warrant", t0=-8,
+                           smooth_k = 30,
+                           post.only = FALSE,
+                           fit_model = mod )
+plot( newjersey$month, newjersey$n.warrant )
+lines( newjersey$month, smooth, col="red" )  
+}

@@ -2,15 +2,16 @@ test_that("vague tests of post_stratified_ITS", {
  
   R = 10
   data( "meck_subgroup")
-  meck = rename( meck_subgroup, N = n.cases )
   t0 = 0
+  meck = meck_subgroup
+  head( meck )
   tmax = max( meck$month )
   
-  pis = calculate_group_weights( "category", meck, t0, tmax )
+  pis = calculate_group_weights( "category", Nname = "n.cases", meck, t0, tmax )
   pis
   expect_equal( nrow(pis), 3 )
-  
-  adjdat = adjust_data( meck, "pbail", "category", pi_star=pis, include_aggregate=TRUE )
+  head( meck )
+  adjdat = adjust_data( meck, "pbail", "category", Nname = "n.cases", pi_star=pis, include_aggregate=TRUE )
   head( adjdat )
   expect_true( all( c( "pbail_felony", "pbail_misdem", "pbail_traffic" ) %in% colnames(adjdat) ) )
   
@@ -21,7 +22,7 @@ test_that("vague tests of post_stratified_ITS", {
   
   ## And with counts
   
-  adjdat = adjust_data( meck, "n.bail", "category", pis, include_aggregate = TRUE, is_count = TRUE )
+  adjdat = adjust_data( meck, "n.bail", "category", Nname = "n.cases", pis, include_aggregate = TRUE, is_count = TRUE )
   # Modeling adjusted and not
   envelope.adj = process_outcome_model( "n.bail.adj", adjdat, t0=t0, R = 100, summarize = TRUE, smooth=FALSE )
   expect_equal( nrow( envelope.adj ), nrow( adjdat ) )
@@ -41,11 +42,11 @@ test_that("aggregate_data", {
   
   meck = rename( meck, N = n.cases )
   
-  ad = aggregate_data( meck, "pbail", "category" )
+  ad = aggregate_data( meck, "pbail", "category", Nname = "N" )
   expect_true( is.data.frame(ad ) )
   
-  expect_error( aggregate_data( meck, "pbail2", "category" ) )
-  expect_error( aggregate_data( meck, "pbail2", "category", covariates = "foo" ) )
+  expect_error( aggregate_data( meck, "pbail2", "category", Nname = "N" ) )
+  expect_error( aggregate_data( meck, "pbail2", "category", Nname = "N", covariates = "foo" ) )
   
 } )
 

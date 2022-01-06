@@ -1,7 +1,8 @@
 
 
 #' @title Summary function for summarize.simulation.results
-#' @description Given a set of simulation runs, estimate average impact over range of months
+#' 
+#' @description Given a set of simulation runs, estimate average impact over range of months.
 #' @param res Dataframe of a single series (simulated or otherwise)
 #' @param outcomename Name of outcome in res
 #' @param months Which months to average over, Default: 1:18
@@ -13,7 +14,9 @@
 #' calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
 #' @rdname calculate_average_outcome
 #' @export
-#'
+#' @seealso See \code{\link{aggregate_simulation_results}} for how this function would be used.
+#' @examples
+#' calculate_average_outcome( mecklenberg, "pbail", months = 1:18 )
 calculate_average_outcome = function( res, outcomename,
                                       months = 1:54,
                                       ... ) {
@@ -35,8 +38,18 @@ calculate_average_outcome = function( res, outcomename,
 #' @param summarizer A function to calculate some summary quantity, Default:
 #'   calculate_average_outcome
 #' @param ... Extra arguments passed to the summarizer function.
-#' 
-#' @return List of the test statistic and reference distribution.
+#'
+#' @return List of length two, with first item being the observed value of the
+#'   test statistic and the second being a numeric vector representing the
+#'   emperical reference distribution.
+#' @examples
+#' predictions = process_outcome_model( "pbail", mecklenberg,
+#'                                     t0=0, R = 5,
+#'                                     summarize = FALSE, smooth=FALSE )
+#' sstat = aggregate_simulation_results( orig.data = mecklenberg, outcomename = "pbail",
+#'                                      predictions = predictions, months = 1:18 )
+#' sstat$t
+#' sstat$t.obs
 #'
 #' @export
 aggregate_simulation_results = function( orig.data, predictions,

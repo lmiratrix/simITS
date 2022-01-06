@@ -8,17 +8,24 @@ aggregate_data(
   dat,
   outcomename,
   groupname,
+  Nname,
   is_count = FALSE,
   rich = TRUE,
   covariates = NULL
 )
 }
 \arguments{
-\item{dat}{Dataframe of data}
+\item{dat}{Dataframe with one row for each time point and group that we are
+going to post stratify on.  This dataframe should also have an column with
+passed name "Nname" indicating the number of cases that make up each given
+row. It should have a 'month' column for the time.}
 
 \item{outcomename}{String name of the outcome variable in dat.}
 
-\item{groupname}{Name of grouping variable to post-stratify on.}
+\item{groupname}{Name of the column that has the grouping categorical
+variable}
+
+\item{Nname}{Name of variable holding the counts (weight) in each group.}
 
 \item{is_count}{If TRUE the data are counts, and should be aggregated by sum
 rather than by mean.}
@@ -30,7 +37,28 @@ month that are each group and so forth.}
 rich dataframe.  These are not used in this method for any calculations.
 Pass as list of column names of dat}
 }
+\value{
+Dataframe of aggregated data, one row per month.  If rich=TRUE many
+  extra columns with further information.
+}
 \description{
 This will take a dataframe with each row being the outcomes, etc., for a
 given group for a given month and aggregate those groups for each month.
+}
+\examples{
+data( "meck_subgroup" )
+head( meck_subgroup )
+pis = calculate_group_weights( "category", Nname="n.cases", 
+                               meck_subgroup, t_min=0, t_max= max( meck_subgroup$month ) )
+pis
+
+agg = aggregate_data( meck_subgroup, 
+                      outcomename="pbail", groupname="category", Nname="n.cases", 
+                      is_count=FALSE,
+                      rich = TRUE, covariates = NULL )
+head( agg )  
+
+
+adjdat = adjust_data( meck_subgroup, "pbail", "category", "n.cases", pis, include_aggregate=TRUE )
+head( adjdat )
 }

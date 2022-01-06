@@ -3,7 +3,8 @@
 
 #' Make fake data for testing purposes.
 #'
-#' Has heavy seasonality, and an extra bump at 12 months post-policy
+#' Defaults have heavy seasonality, and an extra bump in impact kicks in at 12
+#' months post-policy.
 #'
 #' @param t_min Index of first month
 #' @param t_max Index of last month
@@ -23,10 +24,10 @@
 #'   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 #'
 #' @examples
-#' simData <- generate_fake_data()
-#' t0 <- 0
-#' simData <- generate_fake_data(t_min=-40, t_max=15, t0=t0)
-#'
+#' fdat = generate_fake_data(-100,100, rho = 0.95, coef_q=c(0,0,0,0), coef_temp = 0)
+#' plot( fdat$month, fdat$Y, type="l" )
+#' fdat2 = generate_fake_data(-100, 100, rho = 0.0, coef_q=c(0,0,0,0), coef_temp = 0)
+#' plot( fdat$month, fdat2$Y, type="l" )
 #' @export
 generate_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.omega = 1,
                            coef_line = c( 20, 0.05 ),

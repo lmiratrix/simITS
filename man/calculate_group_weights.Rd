@@ -4,24 +4,51 @@
 \alias{calculate_group_weights}
 \title{Calculate proportion of subgroups across time}
 \usage{
-calculate_group_weights(groupname, dat, t_min, t_max = max(dat$month), N = "N")
+calculate_group_weights(
+  groupname,
+  dat,
+  t_min,
+  t_max = max(dat$month),
+  Nname = "N"
+)
 }
 \arguments{
 \item{groupname}{Name of the column that has the grouping categorical
 variable}
 
 \item{dat}{Dataframe with one row for each time point and group that we are
-going to post stratify on.  This dataframe should also have an 'N' column
-indicating the number of cases that make up each given row. It should have
-a 'month' column for the time.}
+going to post stratify on.  This dataframe should also have an column with
+passed name "Nname" indicating the number of cases that make up each given
+row. It should have a 'month' column for the time.}
 
 \item{t_min}{The start month to aggregate cases over.}
 
 \item{t_max}{The final month (default is last month).}
 
-\item{N}{Name of variable holding the counts (weight) in each group.}
+\item{Nname}{Name of variable holding the counts (weight) in each group.}
+}
+\value{
+Dataframe of each group along with overall average group weight in
+  the specified timespan.
 }
 \description{
 Calculate overall proportion of cases in each group that lie within a given
 interval of time defined by t_min and t_max.
+}
+\examples{
+data( "meck_subgroup" )
+head( meck_subgroup )
+pis = calculate_group_weights( "category", Nname="n.cases", 
+                               meck_subgroup, t_min=0, t_max= max( meck_subgroup$month ) )
+pis
+
+agg = aggregate_data( meck_subgroup, 
+                      outcomename="pbail", groupname="category", Nname="n.cases", 
+                      is_count=FALSE,
+                      rich = TRUE, covariates = NULL )
+head( agg )  
+
+
+adjdat = adjust_data( meck_subgroup, "pbail", "category", "n.cases", pis, include_aggregate=TRUE )
+head( adjdat )
 }

@@ -7,30 +7,28 @@
 
 
 #' Calculate proportion of subgroups across time
-#' 
+#'
 #' Calculate overall proportion of cases in each group that lie within a given
 #' interval of time defined by t_min and t_max.
 #'
-#' @param groupname Name of the column that has the grouping categorical
-#'   variable
+#' @inheritParams aggregate_data
 #' @param t_min The start month to aggregate cases over.
 #' @param t_max The final month (default is last month).
-#' @param dat Dataframe with one row for each time point and group that we are
-#'   going to post stratify on.  This dataframe should also have an 'N' column
-#'   indicating the number of cases that make up each given row. It should have
-#'   a 'month' column for the time.
-#' @param N Name of variable holding the counts (weight) in each group.
+#' @return Dataframe of each group along with overall average group weight in
+#'   the specified timespan.
+#' @example examples/aggregate_data_etc.R
 #' @export
-calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$month ), N = "N" ) {
+calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$month ), Nname = "N" ) {
 
-  stopifnot( N %in% names( dat ) )
+  stopifnot( Nname %in% names( dat ) )
   #groupname.q = quo( groupname )
     # select target months to calibrate averages on
     dat = dplyr::filter( dat, month >= t_min, month <= t_max )
 
     # calculate the total sizes for each group
     sdat = dat %>% dplyr::group_by_at( groupname ) %>%
-         dplyr::summarise( N = sum(!!rlang::sym(N)) )
+         dplyr::summarise( N = sum(!!rlang::sym(Nname)) )
+    
     sdat = sdat %>% dplyr::ungroup() %>% dplyr::mutate( pi_star = N / sum(N) )
 
     sdat
@@ -42,9 +40,14 @@ calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$mont
 #' This will take a dataframe with each row being the outcomes, etc., for a
 #' given group for a given month and aggregate those groups for each month.
 #'
-#' @param dat Dataframe of data
+#' @param dat Dataframe with one row for each time point and group that we are
+#'   going to post stratify on.  This dataframe should also have an column with
+#'   passed name "Nname" indicating the number of cases that make up each given
+#'   row. It should have a 'month' column for the time.
 #' @param outcomename String name of the outcome variable in dat.
-#' @param groupname Name of grouping variable to post-stratify on. 
+#' @param groupname Name of the column that has the grouping categorical
+#'   variable
+#' @param Nname Name of variable holding the counts (weight) in each group.
 #' @param rich If TRUE, add a bunch of extra columns with proportions of the
 #'   month that are each group and so forth.
 #' @param is_count If TRUE the data are counts, and should be aggregated by sum
@@ -52,8 +55,12 @@ calculate_group_weights = function( groupname, dat, t_min, t_max = max( dat$mont
 #' @param covariates group-invariant covariates to preserve in the augmented
 #'   rich dataframe.  These are not used in this method for any calculations.
 #'   Pass as list of column names of dat
+#' @return Dataframe of aggregated data, one row per month.  If rich=TRUE many
+#'   extra columns with further information.
+#' @example examples/aggregate_data_etc.R
 #' @export
-aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
+aggregate_data = function( dat, outcomename, groupname, Nname, 
+                           is_count=FALSE,
                            rich = TRUE, covariates = NULL ) {
 
   if ( is.null( covariates ) ) {
@@ -68,14 +75,14 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
         dd <- dat %>% dplyr::group_by( month ) %>%
             dplyr::summarise( .Y = sum( (!!rlang::sym(outcomename)) ),
                      #  .Y.bar = sum( (!!rlang::sym(outcomename))  ) / sum(N),
-                       N = sum(N) )
+                       N = sum( (!!rlang::sym(Nname)) ) )
         dd[ outcomename ] = dd$.Y
        # dd[ paste0( outcomename, ".bar" ) ] = dd$.Y.bar
         dd$.Y = dd$.Y.bar = NULL
     } else {
         dd <- dat %>% dplyr::group_by( month ) %>%
-            dplyr::summarise( .Y = sum( N * (!!rlang::sym(outcomename)) ) / sum(N),
-                       N = sum(N) )
+            dplyr::summarise( .Y = sum( (!!rlang::sym(Nname)) * (!!rlang::sym(outcomename)) ) / sum( (!!rlang::sym(Nname)) ),
+                       N = sum( (!!rlang::sym(Nname)) ) )
         dd[ outcomename ] = dd$.Y
         dd$.Y = NULL
     }
@@ -83,13 +90,14 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 
     if ( rich ) {
         # calculate group sizes
-      ddwts = dat %>% dplyr::select( "month", groupname, "N" ) %>%
-        dplyr::group_by( month ) %>%
-        dplyr::mutate( pi = N / sum(N ) ) %>%
-        dplyr::select( -N ) %>%
-        tidyr::pivot_wider( month, names_from = groupname, values_from = "pi",
-                            names_prefix = "pi_" )
-      
+        ddwts = dat %>% dplyr::select( "month", groupname, Nname ) %>%
+          dplyr::rename( N = {{Nname}} ) %>%
+          dplyr::group_by( month ) %>%
+          dplyr::mutate( pi = N / sum( N ) ) %>% 
+          dplyr::select( -N ) %>%
+          tidyr::pivot_wider( month, 
+                              names_from = groupname, values_from = "pi",
+                              names_prefix = "pi_" )
         
         # throw in group baselines and covariates as well in wide form
         ddg = dat[ c( "month", groupname, outcomename, covariates ) ]
@@ -97,8 +105,8 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
         names(ddg) = gsub( groupname, outcomename, names(ddg) )
         stopifnot(nrow(ddg) == nrow( dd ) )  # possibly covariates varied in spread?
 
+        ddg$month = ddwts$month = NULL
         dd = dplyr::bind_cols( dd, ddg, ddwts )
-        dd$month1 = dd$month2 = NULL
     }
 
     dd
@@ -114,6 +122,8 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 #' @param outcomename Name of column that has the outcome to calculated adjusted
 #'   values for.
 #' @param groupname Name of categorical covariate that determines the groups.
+#' @param Nname Name of column in dat that contains total cases (this is the
+#'   name of the variable used to generate the weights in pi_star).
 #' @param include_aggregate Include aggregated (unadjusted) totals in the output
 #'   as well.
 #' @param dat  Dataframe of data.  Requires an N column of total cases
@@ -124,8 +134,10 @@ aggregate_data = function( dat, outcomename, groupname, is_count=FALSE,
 #'   measure (this impacts how aggregation is done).
 #' @param covariates Covariates to be passed to aggregation (list of string
 #'   variable names).
+#' @return Dataframe of adjusted data.
+#' @example examples/aggregate_data_etc.R
 #' @export
-adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
+adjust_data = function( dat, outcomename, groupname, Nname, pi_star, is_count=FALSE,
                         include_aggregate = FALSE,
                         covariates = NULL ) {
 
@@ -133,14 +145,14 @@ adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
     adat = merge( dat, pi_star[ c( groupname, "pi_star" ) ], by=groupname, all.x = TRUE )
 
     if ( is_count ) {
-        adat[outcomename] = adat[[outcomename]] / adat[["N"]]
+        adat[outcomename] = adat[[outcomename]] / adat[[Nname]]
     }
 
     # calculate adjusted outcomes
     adj.dat = adat %>% dplyr::group_by( month ) %>%
         dplyr::summarise( #.Y = sum( N * ( !!rlang::sym( outcomename ) ) / sum(N) ),
                    .Y.adj = sum( pi_star * !!rlang::sym( outcomename ) ),
-                   N = sum( N ) )
+                   N = sum(!!rlang::sym(Nname) ) )
 
     if ( is_count ) {
         adj.dat = dplyr::mutate( adj.dat, #.Y = .Y * N,
@@ -153,7 +165,9 @@ adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
     adj.dat$.Y.adj = adj.dat$.Y = NULL
 
     if ( include_aggregate ) {
-        sdat = aggregate_data( dat, outcomename, groupname, is_count, covariates = covariates )
+        sdat = aggregate_data( dat, 
+                               outcomename=outcomename, groupname=groupname, Nname=Nname, 
+                               is_count=is_count, covariates = covariates )
         adj.dat = merge( adj.dat, sdat, by=c("N","month"), all=TRUE )
     }
 
@@ -174,7 +188,12 @@ adjust_data = function( dat, outcomename, groupname, pi_star, is_count=FALSE,
 #' @param t_min Index of first month
 #' @param t_max Index of last month
 #' @param t0 last pre-policy timepoint
-#' @param method Type of post-stratification structure to generate.
+#' @param method Type of post-stratification structure to generate (three designs of 'complex', 'linear' and 'jersey' were originally concieved of when designing simulation studies with different types of structure).
+#' @return Dataframe of fake data, with one row per group per time period.
+#' @examples 
+#' fdat = generate_fake_grouped_data(t_min=-5,t_max=10, t0 = 0)
+#' table( fdat$month )
+#' table( fdat$type )
 #' @export
 generate_fake_grouped_data = function( t_min, t0, t_max, method=c("complex","linear","jersey") ) {
     stopifnot( t_min < t0 )

@@ -22,5 +22,12 @@ Augmented dataframe with lagged covariates as new columns. Will
   clobber old columns if the names (of form "lag.XXXX") conflict.
 }
 \description{
-Augment dataframe with lagged covariates
+Take outcome and a list of covariates and add new columns with lagged
+versions.  Assumes rows of dataframe are in time ascending order.  Lagged
+outcome canonically called 'lag.outcome'.  Covariates 'lag.XXX'.
+}
+\examples{
+data( "newjersey" )
+newjersey = add_lagged_covariates(newjersey, "n.warrant", c("sin.m","cos.m" ) )
+head( newjersey[ c( "n.warrant", "sin.m", "lag.outcome", "lag.sin.m" ) ] )
 }

@@ -11,7 +11,7 @@ smooth_residuals(
   post.only = TRUE,
   smooth_k = SMOOTH_K,
   fit_model = fit_model_default,
-  covariates,
+  covariates = res,
   full_output = FALSE
 )
 }
@@ -46,10 +46,11 @@ defined by fit_model.}
 process.}
 }
 \value{
-A numeric vector of the smoothed residuals.  If full_output=TRUE return a dataframe with 
-  several other columns: `resid`, the residuals based on Ystar and the model,
-  `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
-  the model used for smoothing.  Here the smoothed values will be 'Ysmooth'.
+A numeric vector of the smoothed residuals.  If full_output=TRUE
+  return a dataframe with several other columns: `resid`, the residuals based
+  on Ystar and the model, `residStar` the smoothed residuals, 'Ybar.sm' the
+  structural predictions of the model used for smoothing.  Here the smoothed
+  values will be 'Ysmooth'.
 }
 \description{
 Smooth a series by fitting the model to the data, smoothing the residuals,
@@ -60,6 +61,27 @@ Use loess smoother on complete series of residuals including original data
 pre-policy and synthetic data post policy (i.e., smooth the entire plausible
 series).
 }
+\examples{
+
+data( "newjersey" )
+smooth = smooth_series( newjersey, outcomename = "n.warrant", t0= -8,
+                        smooth_k = 30,
+                        post.only = FALSE)
+plot( newjersey$month, newjersey$n.warrant )
+lines( newjersey$month, smooth, col="red" )  
+
+mod =  make_fit_season_model( ~ temperature )
+newjersey = add_lagged_covariates( newjersey, outcomename = "n.warrant", 
+                                   covariates = c("temperature") )
+
+smooth = smooth_residuals( newjersey, outcomename = "n.warrant", t0=-8,
+                           smooth_k = 30,
+                           post.only = FALSE,
+                           fit_model = mod )
+plot( newjersey$month, newjersey$n.warrant )
+lines( newjersey$month, smooth, col="red" )  
+}
 \seealso{
-smooth_series
+See \code{\link{smooth_series}} for a more vanilla version that
+  smooths without the model fitting step.
 }

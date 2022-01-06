@@ -32,3 +32,19 @@ Resulting functions have the following parameters: `res` (the data), `t0`
 (start time), `outcomename`, `post.only` flag (for smoothing only post data
 or not), and `smooth_k`, a tuning parameter for degree of smoothing.
 }
+\examples{
+data( "newjersey")
+modA = make_fit_season_model( ~ temperature )
+modB = make_fit_season_model( ~ sin.m + cos.m )
+newjersey = add_lagged_covariates( newjersey, "n.warrant", 
+                                   covariates = c("sin.m", "cos.m", "temperature") )
+smoother = make_model_smoother( fit_model = modA, covariates = newjersey )
+class(smoother)
+
+# Pass made function to process_outcome_model()
+envelope = process_outcome_model( "n.warrant", newjersey, t0=-8, R = 1,
+                                  summarize = TRUE, smooth=TRUE, 
+                                  smoother = smoother, smooth_k = 11,
+                                  fit.model = modB )
+
+}

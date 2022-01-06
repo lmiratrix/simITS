@@ -65,7 +65,8 @@ drop_extra_covariates = function( M0, data  ) {
 #'   outcome given the model with no autoregressive aspect.
 #'
 #'   If summarize=FALSE, a dataframe of all the raw series generated.
-#' @seealso extrapolate_model
+#' @seealso The core internal function that this method is a wrapper for is \code{\link{extrapolate_model}}.
+#' @example examples/example_process_outcome_model.R
 #' @export
 process_outcome_model = function( outcomename, dat, t0, R=400, summarize=FALSE,
                                   smooth=FALSE, smoother = NULL,

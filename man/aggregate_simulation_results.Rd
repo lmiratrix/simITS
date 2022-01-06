@@ -25,10 +25,22 @@ calculate_average_outcome}
 \item{...}{Extra arguments passed to the summarizer function.}
 }
 \value{
-List of the test statistic and reference distribution.
+List of length two, with first item being the observed value of the
+  test statistic and the second being a numeric vector representing the
+  emperical reference distribution.
 }
 \description{
 This method is used to look at summary statistics such as
   average impact post-policy, and see how the predictive distribution
   compares to the observed.
+}
+\examples{
+predictions = process_outcome_model( "pbail", mecklenberg,
+                                    t0=0, R = 5,
+                                    summarize = FALSE, smooth=FALSE )
+sstat = aggregate_simulation_results( orig.data = mecklenberg, outcomename = "pbail",
+                                     predictions = predictions, months = 1:18 )
+sstat$t
+sstat$t.obs
+
 }

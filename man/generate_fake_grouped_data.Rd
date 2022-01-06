@@ -18,9 +18,17 @@ generate_fake_grouped_data(
 
 \item{t_max}{Index of last month}
 
-\item{method}{Type of post-stratification structure to generate.}
+\item{method}{Type of post-stratification structure to generate (three designs of 'complex', 'linear' and 'jersey' were originally concieved of when designing simulation studies with different types of structure).}
+}
+\value{
+Dataframe of fake data, with one row per group per time period.
 }
 \description{
 This code makes synthetic grouped data that can be used to illustrate
 benefits of post stratification.
+}
+\examples{
+fdat = generate_fake_grouped_data(t_min=-5,t_max=10, t0 = 0)
+table( fdat$month )
+table( fdat$type )
 }

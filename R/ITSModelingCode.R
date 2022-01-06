@@ -21,7 +21,7 @@ SMOOTH_K = 11
 #' @param t0 last pre-policy timepoint
 #' @param dat Dataframe of the data.
 #' @return Predicted sequence for passed dataframe (as vector)
-#' @export
+#' @noRd
 generate_Ybars = function( fit_model, outcomename, t0, dat ) {
 
   # refit model with no_lags
@@ -62,6 +62,7 @@ generate_Ybars = function( fit_model, outcomename, t0, dat ) {
 #' @param include.start If TRUE, return Y.init as the initial element in the returned sequence.
 #'
 #' @return Vector of the synthetic outcomes.
+#' @noRd
 make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
                                        expected=FALSE, include.start = FALSE ) {
     if ( expected ) {
@@ -90,6 +91,7 @@ make_autoregressive_series = function( Ybar, Y.init, beta1, sigma,
 #' @param fit0 Model fit to data.
 #' @param dat Data to predict outcomes for using fit0.
 #' @return Predictions as a numeric vector.
+#' @noRd
 generate_structure_sequence = function( fit0, dat ) {
   dat$lag.outcome = 0
   stats::predict( fit0, newdata=dat )
@@ -113,7 +115,7 @@ generate_structure_sequence = function( fit0, dat ) {
 #' @return Dataframe, one row per timepoint.  Columns are 'month' (the time),
 #'   'Ybar' the predicted outcomes from the model, and 'Ystar', a concatenation
 #'   of the pre-policy series followed by the synthetic sequence.
-#' @export
+#' @noRd
 generate_prediction_sequence = function( beta.vec, sigma,
                                          dat, fit0, outcomename, t0 ) {
     fit0$coefficients = beta.vec
@@ -175,6 +177,8 @@ generate_prediction_sequence = function( beta.vec, sigma,
 #'   smoothed predictions of the original Ystar outcome.  Also includes 'Ystar'
 #'   the original sequence to be smoothed.
 #'
+#' @example examples/example_smooth_residuals.R
+#' 
 #' @export
 #' @importFrom rlang .data
 #' @importFrom dplyr mutate
@@ -226,19 +230,23 @@ smooth_series = function( res, outcomename, t0,
 #' @param covariates A dataframe with all covariates needed in the model fitting
 #'   defined by fit_model.
 #'
-#' @return A numeric vector of the smoothed residuals.  If full_output=TRUE return a dataframe with 
-#'   several other columns: `resid`, the residuals based on Ystar and the model,
-#'   `residStar` the smoothed residuals, 'Ybar.sm' the structural predictions of
-#'   the model used for smoothing.  Here the smoothed values will be 'Ysmooth'.
+#' @return A numeric vector of the smoothed residuals.  If full_output=TRUE
+#'   return a dataframe with several other columns: `resid`, the residuals based
+#'   on Ystar and the model, `residStar` the smoothed residuals, 'Ybar.sm' the
+#'   structural predictions of the model used for smoothing.  Here the smoothed
+#'   values will be 'Ysmooth'.
+#' @example examples/example_smooth_residuals.R
+#'   
 #' @export
-#' @seealso smooth_series
+#' @seealso See \code{\link{smooth_series}} for a more vanilla version that
+#'   smooths without the model fitting step.
 #' @importFrom rlang .data
 #' @importFrom dplyr mutate filter
 smooth_residuals = function( res, t0, outcomename,
                              post.only = TRUE,
                              smooth_k = SMOOTH_K,
                              fit_model = fit_model_default,
-                             covariates,
+                             covariates = res,
                              full_output = FALSE ) {
     stopifnot( nrow( res ) == nrow( covariates ) )
 
@@ -291,6 +299,7 @@ smooth_residuals = function( res, t0, outcomename,
 #'
 #' @return A smoother function that can be passed to the smoothing routines.
 #'   This function is of the form listed above.
+#' @example examples/make_model_smoother.R
 #'
 #' @export
 make_model_smoother = function( fit_model, covariates ) {
@@ -322,12 +331,21 @@ make_model_smoother = function( fit_model, covariates ) {
 #' @param fit0 The fit linear model to simulate from.
 #' @param R Number of series to generate.
 #' @param t0 Last month of pre-policy.  Will start predicting at t0+1.
-#' @param dat A dataframe with the covariates needed by the model fit0 for both pre
-#'   and post-policy months.
+#' @param dat A dataframe with the covariates needed by the model fit0 for both
+#'   pre and post-policy months.
 #' @param outcomename The name of the column in dat which is our outcome.
+#' @references The `arm` package, see
+#'   \url{https://cran.r-project.org/package=arm}
 #'
-#' @return data.frame with the collection of predicted series
-#' 
+#'   Also see Gelman, A., & Hill, J. (2007). Data analysis using regression and
+#'   multilevelhierarchical models (Vol. 1). New York, NY, USA: Cambridge
+#'   University Press.
+#'
+#' @return A data.frame with the collection of predicted series, one row per
+#'   month per replicate (so will have R*nrow(dat) rows).
+#'
+#' @example examples/make_many_predictions.R
+#'
 #' @export
 make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
@@ -373,10 +391,11 @@ make_many_predictions = function( fit0, dat, R, outcomename, t0 ) {
 
 
 
-#' @describeIn make_many_predictions Make many predictions using estimated
-#'   parameters without additional uncertainty. This takes point estimates from
-#'   the fit model as fixed parameters. WARNING: This method will not capture true
-#'   uncertainty as it is not taking parameter uncertainty into account.
+#' @describeIn make_many_predictions This version makes multiple predictions
+#'   using estimated parameters without additional uncertainty. This takes point
+#'   estimates from the fit model as fixed parameters. WARNING: This method will
+#'   not capture true uncertainty as it is not taking parameter uncertainty into
+#'   account.
 #' @export
 make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 
@@ -392,6 +411,10 @@ make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 
 #' Augment dataframe with lagged covariates
 #'
+#' Take outcome and a list of covariates and add new columns with lagged
+#' versions.  Assumes rows of dataframe are in time ascending order.  Lagged
+#' outcome canonically called 'lag.outcome'.  Covariates 'lag.XXX'.
+#' 
 #' @param dat   The dataframe
 #' @param outcomename   The outcome of interest (string)
 #' @param covariates The covariates to lag along with the outcome. This can be
@@ -402,6 +425,10 @@ make_many_predictions_plug = function( fit0, dat, R, outcomename, t0 ) {
 #'
 #' @return Augmented dataframe with lagged covariates as new columns. Will
 #'   clobber old columns if the names (of form "lag.XXXX") conflict.
+#' @examples
+#' data( "newjersey" )
+#' newjersey = add_lagged_covariates(newjersey, "n.warrant", c("sin.m","cos.m" ) )
+#' head( newjersey[ c( "n.warrant", "sin.m", "lag.outcome", "lag.sin.m" ) ] )
 #' @export
 add_lagged_covariates = function( dat,
                                   outcomename,
@@ -436,8 +463,8 @@ add_lagged_covariates = function( dat,
 
 #' Extrapolate pre-policy data to post-policy era
 #'
-#' This function takes a fitted model and uses it to make the post-policy predictions by
-#' simulating data.
+#' This function takes a fitted model and uses it to make the post-policy
+#' predictions by simulating data.
 #'
 #' @param M0  The fit model
 #' @param outcomename Outcome of interest (name of column)
@@ -451,14 +478,17 @@ add_lagged_covariates = function( dat,
 #'   data treajectories.
 #' @param smoother  Function to do smoothing, if smoothing set to TRUE.  Default
 #'   is smooth_series()
-#' @param fix_parameters Keep the parameters in the model M0 as fixed; do not add
-#'   parameter uncertainty.
+#' @param fix_parameters Keep the parameters in the model M0 as fixed; do not
+#'   add parameter uncertainty.
 #' @param ... Extra arguments to be passed to smoother (e.g, bandwidth).
-#' @param full_output TRUE means smoother returns residuals as well as smoothed series.
-#'
+#' @param full_output TRUE means smoother returns residuals as well as smoothed
+#'   series.
+#' @seealso \code{\link{process_outcome_model}} for wrapper function for this
+#'   method that is easier to use.
 #' @return Dataframe with columns corresponding to the simulations.  If
 #'   summarize=TRUE, one row per month in original data.  If FALSE, all the
 #'   details of all the runs are returned.
+#' @example examples/extrapolate_model.R
 #' @export
 extrapolate_model = function( M0, outcomename, dat, t0, R=400, summarize=FALSE, smooth=FALSE,
                               smoother = smooth_series, full_output = FALSE, fix_parameters = FALSE, ...) {

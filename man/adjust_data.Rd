@@ -8,6 +8,7 @@ adjust_data(
   dat,
   outcomename,
   groupname,
+  Nname,
   pi_star,
   is_count = FALSE,
   include_aggregate = FALSE,
@@ -23,6 +24,9 @@ values for.}
 
 \item{groupname}{Name of categorical covariate that determines the groups.}
 
+\item{Nname}{Name of column in dat that contains total cases (this is the
+name of the variable used to generate the weights in pi_star).}
+
 \item{pi_star}{The target weights.  Each month will have its groups
 re-weighted to match these target weights.}
 
@@ -35,8 +39,28 @@ as well.}
 \item{covariates}{Covariates to be passed to aggregation (list of string
 variable names).}
 }
+\value{
+Dataframe of adjusted data.
+}
 \description{
 Reweight the components of a series to match target weights for several
 categories. This is a good preprocessing step to adjust for time-varying
 covariates such as changing mix of case types.
+}
+\examples{
+data( "meck_subgroup" )
+head( meck_subgroup )
+pis = calculate_group_weights( "category", Nname="n.cases", 
+                               meck_subgroup, t_min=0, t_max= max( meck_subgroup$month ) )
+pis
+
+agg = aggregate_data( meck_subgroup, 
+                      outcomename="pbail", groupname="category", Nname="n.cases", 
+                      is_count=FALSE,
+                      rich = TRUE, covariates = NULL )
+head( agg )  
+
+
+adjdat = adjust_data( meck_subgroup, "pbail", "category", "n.cases", pis, include_aggregate=TRUE )
+head( adjdat )
 }

@@ -46,11 +46,12 @@ A \code{data.frame} having \code{month} , \code{temperature} ,
   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 }
 \description{
-Has heavy seasonality, and an extra bump at 12 months post-policy
+Defaults have heavy seasonality, and an extra bump in impact kicks in at 12
+months post-policy.
 }
 \examples{
-simData <- generate_fake_data()
-t0 <- 0
-simData <- generate_fake_data(t_min=-40, t_max=15, t0=t0)
-
+fdat = generate_fake_data(-100,100, rho = 0.95, coef_q=c(0,0,0,0), coef_temp = 0)
+plot( fdat$month, fdat$Y, type="l" )
+fdat2 = generate_fake_data(-100, 100, rho = 0.0, coef_q=c(0,0,0,0), coef_temp = 0)
+plot( fdat$month, fdat2$Y, type="l" )
 }

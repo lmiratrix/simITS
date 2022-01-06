@@ -13,8 +13,8 @@ make_fit_season_model(formula, no_lag = NULL)
 to colinearity of lagged outcomes, such as with a sin and cos component).}
 }
 \value{
-A function that takes dat, outcomename, and a lagless flag (see,
-  e.g., fit_model_default)
+A callable function that takes the arguments of dat, outcomename, and a lagless flag (see,
+  e.g., the parameters listed in `fit_model_default()`).
 }
 \description{
 This method returns a function that will fit a model both with and without
@@ -25,4 +25,13 @@ You hand it a formula object specifying the seasonality, e.g., " ~ Q2 + Q3 +
 Q4", if you have quarterly season effects. This method assumes you want
 models with a linear month component as well, and will add that and an
 intercept in automatically.
+}
+\examples{
+data( "newjersey")
+modF = make_fit_season_model( ~ temperature )
+newjersey = add_lagged_covariates( newjersey, "n.warrant", covariates = c("temperature") )
+modF( newjersey, "n.warrant" )
+}
+\seealso{
+fit_model_default for the type of function this method will generate.
 }
