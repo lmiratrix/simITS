@@ -19,7 +19,7 @@
 #'   offset, initial slope, additional slope past 12 months).  Treatment is a
 #'   piecewise linear function.
 #'
-#' @return A \code{data.frame} having \code{month} , \code{temperature} ,
+#' @return A \code{tibble} having \code{month} , \code{temperature} ,
 #'   \code{sin.m} , \code{cos.m} , \code{Q1}, \code{Q2} , \code{Q3}, \code{Q4},
 #'   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 #'
@@ -42,7 +42,7 @@ generate_fake_data = function( t_min = -40, t_max = 9, t0 = 0, rho = 0.50, sd.om
 		is.numeric(coef_line), is.numeric(coef_q) ,is.numeric(coef_temp) ,is.numeric(coef_sin) ,
 		is.numeric(coef_tx))
   # Make some fake data
-  dat = data.frame( month = t_min:t_max )
+  dat = tibble( month = t_min:t_max )
   N = nrow( dat )
   dat = mutate( dat, temperature = 54 + 35 * sin( 2 * pi * (month + 7) / 12 + stats::rnorm( dplyr::n(), 0, 0.5 ) ),
                 sin.m = sin( 2 * pi * month / 12 ),

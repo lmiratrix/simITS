@@ -4,13 +4,23 @@
 \alias{smooth_series}
 \title{Smooth a series using a static loess smoother}
 \usage{
-smooth_series(res, outcomename, t0, smooth_k = SMOOTH_K, post.only = TRUE, ...)
+smooth_series(
+  res,
+  outcomename = "Y",
+  timename = "month",
+  t0 = 0,
+  smooth_k = SMOOTH_K,
+  post.only = TRUE,
+  ...
+)
 }
 \arguments{
-\item{res}{A dataframe with a month column and an 'outcomename' column (which
+\item{res}{A dataframe with a 'timename' column and an 'outcomename' column (which
 is the column that will be smoothed).}
 
-\item{outcomename}{String name of the outcome variable in dat.}
+\item{outcomename}{String name of the outcome variable in dat.  Defaut is "Y".}
+
+\item{timename}{Name of the time column.  Default is "month".}
 
 \item{t0}{last pre-policy timepoint}
 

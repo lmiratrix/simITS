@@ -7,7 +7,8 @@
 aggregate_simulation_results(
   orig.data,
   predictions,
-  outcomename,
+  outcomename = "Y",
+  timename = "month",
   summarizer = calculate_average_outcome,
   ...
 )
@@ -39,7 +40,7 @@ predictions = process_outcome_model( "pbail", mecklenberg,
                                     t0=0, R = 5,
                                     summarize = FALSE, smooth=FALSE )
 sstat = aggregate_simulation_results( orig.data = mecklenberg, outcomename = "pbail",
-                                     predictions = predictions, months = 1:18 )
+                                     predictions = predictions, time_points = 1:18 )
 sstat$t
 sstat$t.obs
 

@@ -7,7 +7,7 @@
 make_fit_season_model(formula, no_lag = NULL)
 }
 \arguments{
-\item{formula}{Formula specifying seasonality.  No outcome or month needed.}
+\item{formula}{Formula specifying seasonality.  No outcome or time needed.}
 
 \item{no_lag}{Formula specifying additional variables to not lag (usually used due
 to colinearity of lagged outcomes, such as with a sin and cos component).}
@@ -23,7 +23,7 @@ lagged outcomes.
 \details{
 You hand it a formula object specifying the seasonality, e.g., " ~ Q2 + Q3 +
 Q4", if you have quarterly season effects. This method assumes you want
-models with a linear month component as well, and will add that and an
+models with a linear time component as well, and will add that and an
 intercept in automatically.
 }
 \examples{

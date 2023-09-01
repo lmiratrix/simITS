@@ -15,35 +15,38 @@ aggregate_data(
 )
 }
 \arguments{
-\item{dat}{Dataframe with one row for each time point and group that we are
-going to post stratify on.  This dataframe should also have an column with
-passed name "Nname" indicating the number of cases that make up each given
-row. It should have a 'month' column for the time.}
+\item{dat}{Dataframe with one row for each time point and group
+that we are going to post stratify on.  This dataframe should
+also have an column with passed name "Nname" indicating the
+number of cases that make up each given row. It should have a
+'time' column for the time.}
 
 \item{outcomename}{String name of the outcome variable in dat.}
 
-\item{groupname}{Name of the column that has the grouping categorical
-variable}
+\item{groupname}{Name of the column that has the grouping
+categorical variable}
 
-\item{Nname}{Name of variable holding the counts (weight) in each group.}
+\item{Nname}{Name of variable holding the counts (weight) in each
+group.}
 
-\item{is_count}{If TRUE the data are counts, and should be aggregated by sum
-rather than by mean.}
+\item{is_count}{If TRUE the data are counts, and should be
+aggregated by sum rather than by mean.}
 
-\item{rich}{If TRUE, add a bunch of extra columns with proportions of the
-month that are each group and so forth.}
+\item{rich}{If TRUE, add a bunch of extra columns with proportions
+of the time point that are each group and so forth.}
 
-\item{covariates}{group-invariant covariates to preserve in the augmented
-rich dataframe.  These are not used in this method for any calculations.
-Pass as list of column names of dat}
+\item{covariates}{group-invariant covariates to preserve in the
+augmented rich dataframe.  These are not used in this method for
+any calculations. Pass as list of column names of dat}
 }
 \value{
-Dataframe of aggregated data, one row per month.  If rich=TRUE many
-  extra columns with further information.
+Dataframe of aggregated data, one row per time point  If
+  rich=TRUE many extra columns with further information.
 }
 \description{
-This will take a dataframe with each row being the outcomes, etc., for a
-given group for a given month and aggregate those groups for each month.
+This will take a dataframe with each row being the outcomes, etc.,
+for a given group for a given time point and aggregate those groups
+for each time point.
 }
 \examples{
 data( "meck_subgroup" )

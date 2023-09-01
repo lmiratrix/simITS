@@ -4,10 +4,10 @@
 \alias{fit_model_default}
 \title{Default ITS model}
 \usage{
-fit_model_default(dat, outcomename, lagless = FALSE, ...)
+fit_model_default(dat, outcomename, lagless = FALSE, timename = "month", ...)
 }
 \arguments{
-\item{dat}{Dataframe of pre-policy data to fit model to.  Needs a "month" column}
+\item{dat}{Dataframe of pre-policy data to fit model to.  Needs a "time" column}
 
 \item{outcomename}{Outcome of interest}
 
@@ -17,10 +17,10 @@ fit_model_default(dat, outcomename, lagless = FALSE, ...)
 }
 \value{
 A fit model (a `lm` object from a `lm()` call) from fitting a simple
-  regression of outcome onto month and lagged month.
+  regression of outcome onto time and lagged time.
 }
 \description{
-This fits the model `outcomename ~ lag.outcome + month`, with no
+This fits the model `outcomename ~ lag.outcome + time`, with no
 covariates.
 }
 \examples{

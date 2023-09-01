@@ -1,33 +1,36 @@
-test_that("process_outcome_model works", {
 
+
+
+test_that("process_outcome_model works", {
+  
   R = 10
   t0 = -8
   
   data( newjersey )
-
+  
   season_model =  make_fit_season_model( ~ temperature )
-
+  
   newjersey = add_lagged_covariates(newjersey, "n.warrant", covariates = season_model )
   head( newjersey )
   expect_true( !is.null( newjersey$lag.temperature ) )
   expect_true( !is.null( newjersey$lag.outcome ) )
   
-  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=TRUE )
+  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", "month", lagless=TRUE )
   summary( mod )
-
-  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=FALSE )
+  
+  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", "month", lagless=FALSE )
   summary( mod )
   expect_equal( names( coef( mod ) ),
                 c("(Intercept)", "month", "temperature", "lag.outcome", "lag.temperature") )
-
+  
   # Fit unsmoothed seasonality model and make envelope
-  envelope = process_outcome_model( "n.warrant", newjersey, t0=t0, R = R,
+  envelope = process_outcome_model( outcomename = "n.warrant", timename = "month", newjersey, t0=t0, R = R,
                                     summarize = TRUE, smooth=FALSE,
                                     fit_model = season_model )
   head( envelope )
   expect_equal( names( envelope ),
-      c("month", "Ymin", "Ymax", "range", "SE", "Ystar", "Y", "Ysmooth", "Ysmooth1", "Ybar" ) )
-
+                c("month", "Ymin", "Ymax", "range", "SE", "Ystar", "Y", "Ysmooth", "Ysmooth1", "Ybar" ) )
+  
 })
 
 
@@ -47,23 +50,30 @@ test_that("process_outcome_model extra covariate drop works", {
   expect_true( !is.null( newjersey$lag.outcome ) )
   expect_true( sum( newjersey$lag.sin.m == newjersey$sin.m, na.rm=TRUE ) == 0 )
   
-  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=TRUE )
+  mod = season_model( dat = filter( newjersey, month <= t0 ), 
+                      outcomename = "n.warrant", timename="month",
+                      lagless=TRUE )
   summary( mod )
   
-  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=FALSE )
+  mod = season_model( dat = filter( newjersey, month <= t0 ), 
+                      outcomename = "n.warrant", timename="month",
+                      lagless=FALSE )
   summary( mod )
   expect_true( sum( is.na( coef(mod) ) ) == 2 )
   
-
+  
   # Fit unsmoothed seasonality model and make envelope
-  expect_warning( envelope <- process_outcome_model( "n.warrant", newjersey, t0=t0, R = R,
-                                    summarize = TRUE, smooth=FALSE,
-                                    fit_model = season_model ) )
+  expect_warning( envelope <- process_outcome_model( outcomename = "n.warrant", timename="month",
+                                                     dat = newjersey, t0=t0, R = R,
+                                                     summarize = TRUE, smooth=FALSE,
+                                                     fit_model = season_model ) )
   head( envelope )
   expect_equal( names( envelope ),
                 c("month", "Ymin", "Ymax", "range", "SE", "Ystar", "Y", "Ysmooth", "Ysmooth1", "Ybar" ) )
   
-
+  expect_true( all( !is.na( envelope$Ybar ) ) )
+  expect_true( all( !is.na( envelope$month ) ) )
+  
 } )
 
 
@@ -82,7 +92,7 @@ test_that("covariate dropping on the models", {
   
   newjersey = add_lagged_covariates(newjersey, "n.warrant", covariates = season_model )
   
-  mod = season_model( dat = filter( newjersey, month <= t0 ), "n.warrant", lagless=FALSE )
+  mod = season_model( dat = filter( newjersey, month <= t0 ), outcomename="n.warrant", timename="month", lagless=FALSE )
   summary( mod )
   expect_equal( length( coef( mod  ) ), 7 )
   

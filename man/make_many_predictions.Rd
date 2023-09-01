@@ -13,17 +13,17 @@ make_many_predictions_plug(fit0, dat, R, outcomename, t0)
 \item{fit0}{The fit linear model to simulate from.}
 
 \item{dat}{A dataframe with the covariates needed by the model fit0 for both
-pre and post-policy months.}
+pre and post-policy time points}
 
 \item{R}{Number of series to generate.}
 
 \item{outcomename}{The name of the column in dat which is our outcome.}
 
-\item{t0}{Last month of pre-policy.  Will start predicting at t0+1.}
+\item{t0}{Last time point of pre-policy.  Will start predicting at t0+1.}
 }
 \value{
 A data.frame with the collection of predicted series, one row per
-  month per replicate (so will have R*nrow(dat) rows).
+  time point per replicate (so will have R*nrow(dat) rows).
 }
 \description{
 Given a fit linear model 'fit0', generate R prediction series starting at t0.
@@ -32,13 +32,13 @@ pseudo-posterior of the model parameters (from Gelman and Hill arm package).
 }
 \section{Functions}{
 \itemize{
-\item \code{make_many_predictions_plug}: This version makes multiple predictions
+\item \code{make_many_predictions_plug()}: This version makes multiple predictions
 using estimated parameters without additional uncertainty. This takes point
 estimates from the fit model as fixed parameters. WARNING: This method will
 not capture true uncertainty as it is not taking parameter uncertainty into
 account.
-}}
 
+}}
 \examples{
 data("mecklenberg" )
 mecklenberg = add_lagged_covariates( mecklenberg, "pbail"  )

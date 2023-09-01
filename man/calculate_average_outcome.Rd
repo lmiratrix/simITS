@@ -4,28 +4,30 @@
 \alias{calculate_average_outcome}
 \title{Summary function for summarize.simulation.results}
 \usage{
-calculate_average_outcome(res, outcomename, months = 1:54, ...)
+calculate_average_outcome(res, outcomename, time_points = 1:54, ...)
 }
 \arguments{
 \item{res}{Dataframe of a single series (simulated or otherwise)}
 
 \item{outcomename}{Name of outcome in res}
 
-\item{months}{Which months to average over, Default: 1:18}
+\item{time_points}{Which time points to average over, Default: 1:18}
 
 \item{...}{Other parameters (ignored)}
 }
 \value{
-Single number (in this case mean of given months)
+Single number (in this case mean of given time points)
 }
 \description{
-Given a set of simulation runs, estimate average impact over range of months.
+Given a set of simulation runs, estimate average
+  impact over range of time points.
 }
 \examples{
 data( mecklenberg )
-calculate_average_outcome( mecklenberg, "pbail", months=1:24 )
-calculate_average_outcome( mecklenberg, "pbail", months = 1:18 )
+calculate_average_outcome( mecklenberg, "pbail", time_points=1:24 )
+calculate_average_outcome( mecklenberg, "pbail", time_points = 1:18 )
 }
 \seealso{
-See \code{\link{aggregate_simulation_results}} for how this function would be used.
+See \code{\link{aggregate_simulation_results}} for how
+  this function would be used.
 }

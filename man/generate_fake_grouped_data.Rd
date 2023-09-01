@@ -12,11 +12,11 @@ generate_fake_grouped_data(
 )
 }
 \arguments{
-\item{t_min}{Index of first month}
+\item{t_min}{Index of first time point}
 
 \item{t0}{last pre-policy timepoint}
 
-\item{t_max}{Index of last month}
+\item{t_max}{Index of last time point}
 
 \item{method}{Type of post-stratification structure to generate (three designs of 'complex', 'linear' and 'jersey' were originally concieved of when designing simulation studies with different types of structure).}
 }
@@ -29,6 +29,6 @@ benefits of post stratification.
 }
 \examples{
 fdat = generate_fake_grouped_data(t_min=-5,t_max=10, t0 = 0)
-table( fdat$month )
+table( fdat$time )
 table( fdat$type )
 }

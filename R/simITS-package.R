@@ -1,3 +1,5 @@
+
+
 #' \code{simITS} package overview
 #'
 #' Analysis via Simulation of Interrupted Time Series
@@ -30,6 +32,7 @@
 #'
 #' @docType package
 #' @name simITS
+#' @aliases simITS-package
 #' @importFrom dplyr %>%
 NULL
 

@@ -27,7 +27,7 @@ values for.}
 \item{Nname}{Name of column in dat that contains total cases (this is the
 name of the variable used to generate the weights in pi_star).}
 
-\item{pi_star}{The target weights.  Each month will have its groups
+\item{pi_star}{The target weights.  Each time point will have its groups
 re-weighted to match these target weights.}
 
 \item{is_count}{Indicator of whether outcome is count data or a continuous

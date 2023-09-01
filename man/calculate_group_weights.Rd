@@ -8,24 +8,26 @@ calculate_group_weights(
   groupname,
   dat,
   t_min,
-  t_max = max(dat$month),
+  t_max = max(dat$time),
   Nname = "N"
 )
 }
 \arguments{
-\item{groupname}{Name of the column that has the grouping categorical
-variable}
+\item{groupname}{Name of the column that has the grouping
+categorical variable}
 
-\item{dat}{Dataframe with one row for each time point and group that we are
-going to post stratify on.  This dataframe should also have an column with
-passed name "Nname" indicating the number of cases that make up each given
-row. It should have a 'month' column for the time.}
+\item{dat}{Dataframe with one row for each time point and group
+that we are going to post stratify on.  This dataframe should
+also have an column with passed name "Nname" indicating the
+number of cases that make up each given row. It should have a
+'time' column for the time.}
 
-\item{t_min}{The start month to aggregate cases over.}
+\item{t_min}{The start time point to aggregate cases over.}
 
-\item{t_max}{The final month (default is last month).}
+\item{t_max}{The final time point (default is last time point).}
 
-\item{Nname}{Name of variable holding the counts (weight) in each group.}
+\item{Nname}{Name of variable holding the counts (weight) in each
+group.}
 }
 \value{
 Dataframe of each group along with overall average group weight in

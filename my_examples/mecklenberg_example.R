@@ -42,6 +42,55 @@ theme_set( my_t )
 
 
 
+#### Fitting simple OLS models to it ####
+
+head( meck )
+meck2 = mutate( meck,
+                Tx = as.numeric( month > 0 ) )
+M.wrong = lm( pbail ~ 1 + month * Tx, data = meck2 )
+summary(M.wrong)
+confint(M.wrong)
+meck2$pred = predict( M.wrong)
+
+ggplot( meck2, aes( x=month, y=pbail)) +
+  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=0.5, xmax=25, fill="lightgray"), col = "lightgray", alpha=0.25) +
+  scale_fill_identity(name = "", guide = "none", labels = c('Post Policy era')) +
+  geom_hline( yintercept = 0, col="black") +
+  geom_line( col="black", lty=1, lwd=0.5) +
+  geom_point() +
+  scale_x_continuous( breaks = c(-29,-24,-18,-12,-6,1,6,12,18,24)) +
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) +
+  labs( title = " ", y = "Percent cases assigned bail", x = " " ) +
+  geom_line( aes( y = pred ), col="red" )
+
+
+library( nlme )
+
+mod.gls <- gls( pbail ~ 1 + month * Tx, data = meck2, 
+                correlation = corARMA(p=1), method="ML" )
+summary( mod.gls )
+
+confint( mod.gls )
+meck2$predGLS = predict( mod.gls )
+
+ggplot( meck2, aes( x=month, y=pbail)) +
+  geom_rect(aes( ymin=-Inf, ymax=Inf, xmin=0.5, xmax=25, fill="lightgray"), col = "lightgray", alpha=0.25) +
+  scale_fill_identity(name = "", guide = "none", labels = c('Post Policy era')) +
+  geom_hline( yintercept = 0, col="black") +
+  geom_line( col="black", lty=1, lwd=0.5) +
+  geom_point() +
+  scale_x_continuous( breaks = c(-29,-24,-18,-12,-6,1,6,12,18,24)) +
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) +
+  labs( title = " ", y = "Percent cases assigned bail", x = " " ) +
+  geom_line( aes( y = predGLS ), col="red" ) +
+  geom_line( aes( y = pred ), col="green" )
+
+meck2$predGLS - meck2$pred
+
+arm::se.coef( M.wrong )
+summary( mod.gls )
+summary( M.wrong )
+  
 #### Exploring the Mecklenberg Data ####
 
 
@@ -161,8 +210,9 @@ ggplot( filter( predictions, month >= t0 ), aes( month, Ystar ) ) +
   geom_point( data=meck, aes( month, pbail ) ) +
   geom_vline( xintercept=t0, col="red" ) +
   labs( x="month", y="proportion given bail") +
-  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(40,70), expand=FALSE) 
 
+# Used in paper (Figure 2a)
 ggsave( paste0( "my_examples/plots/meck_ten_trajectories.", file_format ), 
         width = FIG_WIDTH, height = FIG_HEIGHT, device=file_format )
 
@@ -243,10 +293,15 @@ ggsave( "my_examples/plots/build_out_envelope_plug.pdf", width = FIG_WIDTH, heig
 
 
 # Corrected envelope with uncertainty
-make_envelope_graph(envelope = envelope, t0 = t0) +
+# This is Figure 2b from paper
+env_graph <- make_envelope_graph(envelope = envelope, t0 = t0) +
   labs( x="month", y="proportion given bail") +
   geom_line( aes(y=Ystar ) ) +
-  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(0,100), expand=FALSE) 
+  coord_cartesian(xlim=c(-29.5,24.5), ylim=c(40,70), expand=FALSE) 
+env_graph
+
+env_graph +
+  geom_line( data=meck2, aes( y = predGLS ), col="black", lty=2 ) 
 
 ggsave( paste0( "my_examples/plots/mech_envelope.", file_format ), width = FIG_WIDTH, height = FIG_HEIGHT,
         device=file_format )

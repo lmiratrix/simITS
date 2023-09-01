@@ -7,11 +7,11 @@ test_that("Aggregation of simulation results works", {
   
   data( "mecklenberg")
   t0 = 0
-  preds = process_outcome_model( "pbail", mecklenberg,
+  preds = process_outcome_model( outcomename = "pbail", timename = "month", dat=mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = FALSE, smooth=FALSE )
   
-  sr =  aggregate_simulation_results( mecklenberg, preds, "pbail" )
+  sr =  aggregate_simulation_results( mecklenberg, preds, outcomename="pbail", timename = "month" )
   sr
   
   expect_equal( length( sr ), 2 )
@@ -34,11 +34,12 @@ test_that("Alternate function works for aggregation", {
     
   data( "mecklenberg")
   t0 = 0
-  preds = process_outcome_model( "pbail", mecklenberg,
+  preds = process_outcome_model( outcomename= "pbail", timename="month", dat= mecklenberg,
                                  t0=t0, R = 10,
                                  summarize = FALSE, smooth=FALSE )
   
-  sr =  aggregate_simulation_results( mecklenberg, preds, "pbail", summarizer = agr_2, months=1:5 )
+  sr =  aggregate_simulation_results( mecklenberg, preds, outcomename="pbail", timename="month",
+                                      summarizer = agr_2, months=1:5 )
   sr
   
   expect_equal( length( sr ), 2 )

@@ -4,7 +4,7 @@ test_that("make_envelope_graph works", {
   t0 = 0
   
   # Make the envelope from 10,000 trials (incorporating model uncertainty)
-  envelope = process_outcome_model( "pbail", mecklenberg,
+  envelope = process_outcome_model( outcomename = "pbail", timename="month", mecklenberg,
                                     t0=0, R = 10,
                                     summarize = TRUE, smooth=FALSE )
   
@@ -15,7 +15,7 @@ test_that("make_envelope_graph works", {
     geom_line( aes(y=Ystar ) )
   expect_true( !is.null( grp ) & is.ggplot(grp) )  
   
-  envelope = process_outcome_model( "pbail", mecklenberg,
+  envelope = process_outcome_model( outcomename = "pbail", timename="month", mecklenberg,
                                     t0=0, R = 10,
                                     summarize = TRUE, smooth=TRUE )
   

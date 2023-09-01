@@ -6,9 +6,10 @@
 \usage{
 extrapolate_model(
   M0,
-  outcomename,
   dat,
-  t0,
+  outcomename = "Y",
+  timename = "month",
+  t0 = 0,
   R = 400,
   summarize = FALSE,
   smooth = FALSE,
@@ -21,9 +22,9 @@ extrapolate_model(
 \arguments{
 \item{M0}{The fit model}
 
-\item{outcomename}{Outcome of interest (name of column)}
-
 \item{dat}{Dataframe with data being analyzed.}
+
+\item{outcomename}{Outcome of interest (name of column)}
 
 \item{t0}{Last pre-policy timepoint}
 
@@ -49,7 +50,7 @@ add parameter uncertainty.}
 }
 \value{
 Dataframe with columns corresponding to the simulations.  If
-  summarize=TRUE, one row per month in original data.  If FALSE, all the
+  summarize=TRUE, one row per time point in original data.  If FALSE, all the
   details of all the runs are returned.
 }
 \description{
