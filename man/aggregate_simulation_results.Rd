@@ -8,7 +8,7 @@ aggregate_simulation_results(
   orig.data,
   predictions,
   outcomename = "Y",
-  timename = "month",
+  timename = "time",
   summarizer = calculate_average_outcome,
   ...
 )

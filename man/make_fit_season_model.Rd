@@ -2,36 +2,40 @@
 % Please edit documentation in R/season_model_functions.R
 \name{make_fit_season_model}
 \alias{make_fit_season_model}
-\title{Make a fit_model that takes a seasonality component}
+\title{Make a fit_model function that takes a seasonality component}
 \usage{
 make_fit_season_model(formula, no_lag = NULL)
 }
 \arguments{
-\item{formula}{Formula specifying seasonality.  No outcome or time needed.}
+\item{formula}{Formula specifying seasonality.  No outcome or time
+needed.}
 
-\item{no_lag}{Formula specifying additional variables to not lag (usually used due
-to colinearity of lagged outcomes, such as with a sin and cos component).}
+\item{no_lag}{Formula specifying additional covariates that should
+be included, but without lag (usually used due to colinearity of
+lagged outcomes, such as with a sin and cos component).}
 }
 \value{
-A callable function that takes the arguments of dat, outcomename, and a lagless flag (see,
-  e.g., the parameters listed in `fit_model_default()`).
+Callable function.  See make_fit_model.
 }
 \description{
-This method returns a function that will fit a model both with and without
-lagged outcomes.
+This method returns a function that will fit a model both with and
+without lagged outcomes.
 }
 \details{
-You hand it a formula object specifying the seasonality, e.g., " ~ Q2 + Q3 +
-Q4", if you have quarterly season effects. This method assumes you want
-models with a linear time component as well, and will add that and an
-intercept in automatically.
+You hand it a formula object specifying the seasonality, e.g., " ~
+Q2 + Q3 + Q4", if you have quarterly season effects. This method
+assumes you want models with a linear time component as well, and
+will add that and an intercept in automatically.
+
+It gives you a function back, that you can use to analyze data.
 }
 \examples{
 data( "newjersey")
-modF = make_fit_season_model( ~ temperature )
+modF = make_fit_season_model( ~ temperature, timename = "month" )
 newjersey = add_lagged_covariates( newjersey, "n.warrant", covariates = c("temperature") )
 modF( newjersey, "n.warrant" )
 }
 \seealso{
-fit_model_default for the type of function this method will generate.
+make_fit_model for the type of function this method
+  will generate.
 }

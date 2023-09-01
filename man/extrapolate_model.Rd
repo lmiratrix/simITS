@@ -8,7 +8,7 @@ extrapolate_model(
   M0,
   dat,
   outcomename = "Y",
-  timename = "month",
+  timename = "time",
   t0 = 0,
   R = 400,
   summarize = FALSE,
@@ -24,37 +24,40 @@ extrapolate_model(
 
 \item{dat}{Dataframe with data being analyzed.}
 
-\item{outcomename}{Outcome of interest (name of column)}
+\item{outcomename}{Outcome of interest (name of column).}
+
+\item{timename}{Name of the time variable (name of column).}
 
 \item{t0}{Last pre-policy timepoint}
 
 \item{R}{Number of replications}
 
-\item{summarize}{Boolean, TRUE means collapse all simulated trajectories into
-single aggregate. FALSE means return all paths.}
+\item{summarize}{Boolean, TRUE means collapse all simulated
+trajectories into single aggregate. FALSE means return all paths.}
 
-\item{smooth}{Boolean.  TRUE means fit a smoother to the trajectories and
-look at distribution of smoothed trajectories.  FALSE means look at raw
-data treajectories.}
+\item{smooth}{Boolean.  TRUE means fit a smoother to the
+trajectories and look at distribution of smoothed trajectories.
+FALSE means look at raw data treajectories.}
 
-\item{smoother}{Function to do smoothing, if smoothing set to TRUE.  Default
-is smooth_series()}
+\item{smoother}{Function to do smoothing, if smoothing set to
+TRUE.  Default is smooth_series()}
 
-\item{full_output}{TRUE means smoother returns residuals as well as smoothed
-series.}
+\item{full_output}{TRUE means smoother returns residuals as well as
+smoothed series.}
 
-\item{fix_parameters}{Keep the parameters in the model M0 as fixed; do not
-add parameter uncertainty.}
+\item{fix_parameters}{Keep the parameters in the model M0 as fixed;
+do not add parameter uncertainty.}
 
-\item{...}{Extra arguments to be passed to smoother (e.g, bandwidth).}
+\item{...}{Extra arguments to be passed to smoother (e.g,
+bandwidth).}
 }
 \value{
-Dataframe with columns corresponding to the simulations.  If
-  summarize=TRUE, one row per time point in original data.  If FALSE, all the
-  details of all the runs are returned.
+Dataframe with columns corresponding to the simulations.
+  If summarize=TRUE, one row per time point in original data.  If
+  FALSE, all the details of all the runs are returned.
 }
 \description{
-This function takes a fitted model and uses it to make the post-policy
+This function takes a fitted model and uses it to make post-policy
 predictions by simulating data.
 }
 \examples{
@@ -67,6 +70,6 @@ res = extrapolate_model( M0, "pbail", mecklenberg, 0, 1,
 tail( res )
 }
 \seealso{
-\code{\link{process_outcome_model}} for wrapper function for this
-  method that is easier to use.
+\code{\link{process_outcome_model}} for wrapper function
+  for this method that is easier to use.
 }

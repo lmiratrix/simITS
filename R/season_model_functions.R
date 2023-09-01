@@ -20,7 +20,7 @@
 #' summary( mod )
 #' mod = fit_model_default( meck.pre, "pbail", "month", lagless = FALSE )
 #' summary( mod )
-fit_model_default = function( dat, outcomename, lagless = FALSE, timename = "time", ... ) {
+fit_model_default = function( dat, outcomename, timename = "time", lagless = FALSE,  ... ) {
   
   
   if ( lagless ) {

@@ -41,7 +41,7 @@ offset, initial slope, additional slope past 12 months).  Treatment is a
 piecewise linear function.}
 }
 \value{
-A \code{data.frame} having \code{month} , \code{temperature} ,
+A \code{tibble} having \code{month} , \code{temperature} ,
   \code{sin.m} , \code{cos.m} , \code{Q1}, \code{Q2} , \code{Q3}, \code{Q4},
   \code{post} , \code{Ystr0} , \code{Ystr} , \code{Y}
 }

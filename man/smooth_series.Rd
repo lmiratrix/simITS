@@ -7,7 +7,7 @@
 smooth_series(
   res,
   outcomename = "Y",
-  timename = "month",
+  timename = "time",
   t0 = 0,
   smooth_k = SMOOTH_K,
   post.only = TRUE,
@@ -20,7 +20,7 @@ is the column that will be smoothed).}
 
 \item{outcomename}{String name of the outcome variable in dat.  Defaut is "Y".}
 
-\item{timename}{Name of the time column.  Default is "month".}
+\item{timename}{Name of the time column.  Default is "time".}
 
 \item{t0}{last pre-policy timepoint}
 

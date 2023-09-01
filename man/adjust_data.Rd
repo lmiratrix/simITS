@@ -6,9 +6,10 @@
 \usage{
 adjust_data(
   dat,
-  outcomename,
-  groupname,
-  Nname,
+  outcomename = "Y",
+  timename = "time",
+  groupname = "G",
+  Nname = "N",
   pi_star,
   is_count = FALSE,
   include_aggregate = FALSE,

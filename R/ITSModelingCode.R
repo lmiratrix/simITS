@@ -321,9 +321,10 @@ smooth_residuals = function( res, t0 = 0, outcomename = "Y", timename = "time",
 #' @export
 make_model_smoother = function( fit_model, covariates ) {
   
-  f = function( res, t0, outcomename, post.only = TRUE, smooth_k = SMOOTH_K ) {
+  f = function( res, t0, outcomename, timename, post.only = TRUE, smooth_k = SMOOTH_K ) {
     smooth_residuals( res=res, t0=t0, 
                       outcomename=outcomename, 
+                      timename = timename,
                       post.only=post.only, 
                       smooth_k=smooth_k,
                       fit_model=fit_model, 

@@ -5,9 +5,9 @@
 \alias{make_many_predictions_plug}
 \title{Generate a collection of raw counterfactual trajectories}
 \usage{
-make_many_predictions(fit0, dat, R, outcomename, t0)
+make_many_predictions(fit0, dat, R, outcomename, timename, t0)
 
-make_many_predictions_plug(fit0, dat, R, outcomename, t0)
+make_many_predictions_plug(fit0, dat, R, outcomename, timename, t0)
 }
 \arguments{
 \item{fit0}{The fit linear model to simulate from.}

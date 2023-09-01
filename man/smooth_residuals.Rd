@@ -8,7 +8,7 @@ smooth_residuals(
   res,
   t0 = 0,
   outcomename = "Y",
-  timename = "month",
+  timename = "time",
   post.only = TRUE,
   smooth_k = SMOOTH_K,
   fit_model = fit_model_default,
@@ -24,7 +24,7 @@ is the column that will be smoothed).}
 
 \item{outcomename}{String name of the outcome variable in dat.  Defaut is "Y".}
 
-\item{timename}{Name of the time column.  Default is "month".}
+\item{timename}{Name of the time column.  Default is "time".}
 
 \item{post.only}{If TRUE fit model and smooth post-policy only. WHY fit model
 on post-policy data only?  Because this will make sure the fixed pre-policy

@@ -6,9 +6,10 @@
 \usage{
 aggregate_data(
   dat,
-  outcomename,
-  groupname,
-  Nname,
+  outcomename = "Y",
+  timename = "time",
+  groupname = "G",
+  Nname = "N",
   is_count = FALSE,
   rich = TRUE,
   covariates = NULL
@@ -16,10 +17,10 @@ aggregate_data(
 }
 \arguments{
 \item{dat}{Dataframe with one row for each time point and group
-that we are going to post stratify on.  This dataframe should
-also have an column with passed name "Nname" indicating the
-number of cases that make up each given row. It should have a
-'time' column for the time.}
+ that we are going to post stratify on.  This dataframe should
+ also have an column with passed name "Nname" indicating the
+ number of cases that make up each given row. It should have a
+column "timename" for the time.}
 
 \item{outcomename}{String name of the outcome variable in dat.}
 

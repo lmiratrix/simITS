@@ -4,23 +4,17 @@
 \alias{calculate_group_weights}
 \title{Calculate proportion of subgroups across time}
 \usage{
-calculate_group_weights(
-  groupname,
-  dat,
-  t_min,
-  t_max = max(dat$time),
-  Nname = "N"
-)
+calculate_group_weights(groupname, dat, t_min, t_max = Inf, Nname = "N")
 }
 \arguments{
 \item{groupname}{Name of the column that has the grouping
 categorical variable}
 
 \item{dat}{Dataframe with one row for each time point and group
-that we are going to post stratify on.  This dataframe should
-also have an column with passed name "Nname" indicating the
-number of cases that make up each given row. It should have a
-'time' column for the time.}
+ that we are going to post stratify on.  This dataframe should
+ also have an column with passed name "Nname" indicating the
+ number of cases that make up each given row. It should have a
+column "timename" for the time.}
 
 \item{t_min}{The start time point to aggregate cases over.}
 

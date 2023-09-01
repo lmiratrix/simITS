@@ -55,14 +55,14 @@ This package passes functions for fitting the model, and then uses these functio
 
 ```{r}
 meck.pre = filter( meck, month <= 0 )    
-mod = fit_model_default( meck.pre, "pbail" )
+mod = fit_model_default( meck.pre, "pbail", "month" )
 summary( mod )
 ```
 
 To run the entire simulation and extrapolation as a call, we can directly do:
 ```{r}
 t0 = 0
-envelope = process_outcome_model( "pbail", meck, 
+envelope = process_outcome_model( meck, "pbail", "month", 
                                   t0=t0, R = 100, 
                                   summarize = TRUE, smooth=FALSE )
 sample_n( envelope, 5 ) %>% arrange( month )
@@ -87,14 +87,15 @@ make_envelope_graph(envelope, t0=t0)
 
 We can aggregate impacts for several time points as follows.  First call `process_outcome_model()` without summarizing:
 ```{r}
-predictions = process_outcome_model( "pbail", meck,
+predictions = process_outcome_model( meck, "pbail", "month",
                                      t0=t0, R = 100,
                                      summarize = FALSE, smooth=FALSE )
 ```
 
 Then use `aggregate_simulation_results()`:
 ```{r}
-sstat = aggregate_simulation_results( orig.data = meck, outcomename = "pbail",
+sstat = aggregate_simulation_results( orig.data = meck, 
+                                      outcomename = "pbail", timename = "month",
                                       predictions = predictions, months = 1:18 )
 
 quantile( sstat$t, c( 0.025, 0.975 ))
@@ -109,7 +110,8 @@ sstat$t.obs - quantile( sstat$t, c( 0.025, 0.975 ))
 For simulation we also offer a fake data generator.  It works like this:
 ```{r}
 dat = generate_fake_data( t_min=-60, t_max=18, t0 = 0 )
-qplot( month, Y, data=dat, geom = c( "point","line") )
+ggplot( dat, aes( month, Y ) ) +
+  geom_point() + geom_line()
 ```
 
 # Smoothing
@@ -117,7 +119,7 @@ qplot( month, Y, data=dat, geom = c( "point","line") )
 Here we demonstrate summarizing and smoothing, using the fake data we just generated.
 
 ```{r, fig.width=7}
-envelope = process_outcome_model( "Y", dat, t0=t0, R = 100, 
+envelope = process_outcome_model( dat, "Y", "month", t0=t0, R = 100, 
                                   summarize = TRUE, smooth=TRUE )
 make_envelope_graph(envelope, t0 )
 ```
@@ -127,7 +129,7 @@ We can smooth to different degrees using the `smooth_k` parameter:
 ```{r, fig.width=7}
 alphas = c( 6, 11, 20, 100 )
 preds = purrr::map( alphas, function( alpha ) {
-  pds = process_outcome_model( "Y", dat,
+  pds = process_outcome_model( dat, "Y", "month",
                                t0=t0, R = 20,
                                summarize = FALSE, smooth=TRUE,
                                smooth_k = alpha )
@@ -151,7 +153,7 @@ A seasonality model on some fake data with a strong seasonality component is eas
 data( newjersey )
 fit_season_model_qtemp =  make_fit_season_model( ~ temperature + Q2 + Q3 + Q4 )
 
-envelope = process_outcome_model( "n.warrant", newjersey, t0=-7, R = 100, 
+envelope = process_outcome_model( newjersey, "n.warrant", "month", t0=-7, R = 100, 
                                   summarize = TRUE, smooth=TRUE, 
                                   fit_model = fit_season_model_qtemp )
 make_envelope_graph( envelope, t0=-7 )
@@ -166,7 +168,7 @@ We can smooth around a seasonality model either with a default smoother made fro
 
 ```{r}
 smoother = make_model_smoother( fit_model = fit_season_model_sin, covariates = newjersey )
-envelope_sin = process_outcome_model( "n.warrant", newjersey, t0=-7, R = 100,
+envelope_sin = process_outcome_model( newjersey, "n.warrant", "month", t0=-7, R = 100,
                                   summarize = TRUE, smooth=TRUE, smoother = smoother, smooth_k = 11,
                                   fit_model = fit_season_model_qtemp )
 envelope_sin$Ysmooth.base = envelope$Ysmooth

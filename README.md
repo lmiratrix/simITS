@@ -3,7 +3,11 @@
 
 This package is for analyzing ITS designs with parametric simulation and extrapolation
 
-Active code is on github, with clean releases posted to CRAN.
+Active code is on github, with clean releases posted to CRAN.  To install the github version try
+
+```
+devtools::install_github( "https://github.com/lmiratrix/simITS" )
+```
 
 ## How to learn how to use this package
 

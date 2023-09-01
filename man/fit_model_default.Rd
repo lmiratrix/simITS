@@ -4,7 +4,7 @@
 \alias{fit_model_default}
 \title{Default ITS model}
 \usage{
-fit_model_default(dat, outcomename, lagless = FALSE, timename = "month", ...)
+fit_model_default(dat, outcomename, timename = "time", lagless = FALSE, ...)
 }
 \arguments{
 \item{dat}{Dataframe of pre-policy data to fit model to.  Needs a "time" column}
@@ -26,8 +26,8 @@ covariates.
 \examples{
 mecklenberg = add_lagged_covariates(mecklenberg, "pbail")
 meck.pre = filter( mecklenberg, month <= 0 )
-mod = fit_model_default( meck.pre, "pbail", lagless = TRUE )
+mod = fit_model_default( meck.pre, "pbail", "month", lagless = TRUE )
 summary( mod )
-mod = fit_model_default( meck.pre, "pbail", lagless = FALSE )
+mod = fit_model_default( meck.pre, "pbail", "month", lagless = FALSE )
 summary( mod )
 }
